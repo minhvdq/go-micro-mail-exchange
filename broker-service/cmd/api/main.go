@@ -1,6 +1,7 @@
 package main
 
 import (
+	"broker/event"
 	"fmt"
 	"log"
 	"math"
@@ -13,31 +14,40 @@ import (
 
 const webPort = "8080"
 
+type MailPublisher interface {
+	Push(payload string, routingKey string) error
+}
+
 type Config struct {
-	Rabbit *amqp.Connection
+	Rabbit        *amqp.Connection
+	MailPublisher MailPublisher
 }
 
 func main() {
-	// try to connect to RabbitMQ
 	rabbitConn, err := connect()
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
 	}
+
+	emailEmitter, err := event.NewEmailEmitter(rabbitConn)
+	if err != nil {
+		log.Printf("failed to create email emitter: %v", err)
+		os.Exit(1)
+	}
+
 	app := Config{
-		Rabbit: rabbitConn,
+		Rabbit:        rabbitConn,
+		MailPublisher: emailEmitter,
 	}
 
 	log.Printf("Starting broker on port %s\n", webPort)
-
-	// define http server
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", webPort),
 		Handler: app.routes(),
 	}
 
-	// start the server
 	err = srv.ListenAndServe()
 	if err != nil {
 		log.Panic(err)
@@ -49,7 +59,6 @@ func connect() (*amqp.Connection, error) {
 	var backOff = 1 * time.Second
 	var connection *amqp.Connection
 
-	// dont continue till rabbitmq ready
 	for {
 		c, err := amqp.Dial("amqp://guest:guest@rabbitmq")
 		if err != nil {
