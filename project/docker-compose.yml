@@ -66,7 +66,7 @@ services:
       replicas: 1
   
   authentication-service:
-    build: 
+    build:
       context: ./../authentication-service
       dockerfile: ./../authentication-service/authentication-service.dockerfile
     restart: always
@@ -77,6 +77,20 @@ services:
       replicas: 1
     environment:
       DSN: "host=postgres port=5432 user=postgres password=password dbname=users sslmode=disable timezone=UTC connect_timeout=5"
+
+  tenant-service:
+    build:
+      context: ./../tenant-service
+      dockerfile: ./../tenant-service/tenant-service.dockerfile
+    restart: always
+    ports:
+      - "8082:8082"
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      DSN: "host=postgres port=5432 user=postgres password=password dbname=users sslmode=disable timezone=UTC connect_timeout=5"
+      GEMINI_API_KEY: "${GEMINI_API_KEY}"
 
   postgres:
     image: 'pgvector/pgvector:pg14'
