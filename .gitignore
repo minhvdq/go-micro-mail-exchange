@@ -1,0 +1,20 @@
+# Compiled binaries
+broker-service/brokerApp
+authentication-service/authApp
+logger-service/loggerServiceApp
+mail-service/mailServiceApp
+listener-service/listenerApp
+front-end/frontApp
+front-end/frontendApp
+
+# Docker volume data (runtime state, not source)
+project/db-data/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Go build artifacts
+*.test
+*.out
+vendor/
