@@ -233,7 +233,9 @@ func main() {
 	}
 	defer embedder.Close()
 
-	agent, err := compliance.NewGeminiAgent(ctx, geminiKey, &ragStoreAdapter{m: data.New(conn)})
+	models := data.New(conn)
+
+	agent, err := compliance.NewGeminiAgent(ctx, geminiKey, &ragStoreAdapter{m: models})
 	if err != nil {
 		log.Panicf("agent init: %v", err)
 	}
@@ -241,7 +243,7 @@ func main() {
 
 	app := &Config{
 		DB:             conn,
-		Store:          newDataStore(conn),
+		Store:          &dataStoreAdapter{m: models},
 		GeminiKey:      geminiKey,
 		Rabbit:         rabbit,
 		MailServiceURL: mailURL,
