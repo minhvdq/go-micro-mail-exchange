@@ -319,7 +319,7 @@ func toolCheckPhishing(content, sender string) string {
 }
 
 func (a *GeminiAgent) toolCheckPolicyViolation(ctx context.Context, content, tenantID string) string {
-	if tenantID == "" || a.store == nil {
+	if tenantID == "" || a.store == nil || a.embedder == nil {
 		out, _ := json.Marshal(policyToolResult{PolicyMatch: false, Reason: "no tenant context"})
 		return string(out)
 	}
@@ -357,7 +357,7 @@ func toolCheckExfiltration(recipients, content string) string {
 }
 
 func (a *GeminiAgent) toolRetrievePrecedent(ctx context.Context, content, tenantID string) string {
-	if tenantID == "" || a.store == nil {
+	if tenantID == "" || a.store == nil || a.embedder == nil {
 		out, _ := json.Marshal(precedentToolResult{Precedents: []precedentItem{}, Reason: "no tenant context"})
 		return string(out)
 	}
