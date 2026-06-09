@@ -9,7 +9,7 @@ front-end/frontendApp
 
 # Docker volume data (runtime state, not source)
 project/db-data/
-
+project/.env
 # macOS
 .DS_Store
 **/.DS_Store
@@ -18,3 +18,5 @@ project/db-data/
 *.test
 *.out
 vendor/
+
+.env
