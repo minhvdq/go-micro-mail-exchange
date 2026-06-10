@@ -19,9 +19,9 @@ func NewGeminiEmbedder(_ context.Context, apiKey string) (*GeminiEmbedder, error
 }
 
 func (g *GeminiEmbedder) Embed(ctx context.Context, text string) ([]float32, error) {
-	const url = "https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent"
+	const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent"
 	payload, err := json.Marshal(map[string]any{
-		"model": "models/text-embedding-004",
+		"model": "models/gemini-embedding-001",
 		"content": map[string]any{
 			"parts": []map[string]any{{"text": text}},
 		},

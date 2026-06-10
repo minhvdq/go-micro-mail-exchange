@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS policy_embeddings (
     source_filename VARCHAR(255),
     chunk_index     INT     NOT NULL,
     content         TEXT    NOT NULL,
-    embedding       vector(768) NOT NULL,
+    embedding       vector(3072) NOT NULL,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS email_history_embeddings (
     id          UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id   UUID    NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     content     TEXT    NOT NULL,
-    embedding   vector(768) NOT NULL,
+    embedding   vector(3072) NOT NULL,
     verdict     VARCHAR(10) NOT NULL CHECK (verdict IN ('CLEAN', 'LOW', 'MEDIUM', 'HIGH')),
     violations  TEXT[],
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
