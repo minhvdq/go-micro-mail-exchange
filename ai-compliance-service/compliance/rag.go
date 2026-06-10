@@ -42,7 +42,7 @@ func (g *GeminiEmbedder) EmbedEmail(ctx context.Context, from, to, subject, body
 }
 
 func embedViaREST(ctx context.Context, apiKey, text string) ([]float32, error) {
-	const url = "https://generativelanguage.googleapis.com/v1/models/text-embedding-004:embedContent"
+	const url = "https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent"
 	payload, err := json.Marshal(map[string]any{
 		"model": "models/text-embedding-004",
 		"content": map[string]any{
