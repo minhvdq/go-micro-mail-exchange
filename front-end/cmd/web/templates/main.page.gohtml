@@ -237,6 +237,15 @@
     </div>
     <button type="submit" class="btn btn-primary">Save Settings</button>
   </form>
+
+  <hr class="my-4">
+  <h6 class="mb-3">Data Management</h6>
+  <div class="d-flex gap-2">
+    <a id="exportBtn" href="#" class="btn btn-outline-secondary btn-sm">Export My Data</a>
+    <button id="deleteDataBtn" class="btn btn-outline-danger btn-sm">Erase All Personal Data</button>
+  </div>
+  <p class="text-muted small mt-2">Export downloads a JSON file of all audit and quarantine records. Erase permanently deletes all email data (audit log, quarantine, policy embeddings) — your account and API key are kept.</p>
+  <div id="delete-data-alert" class="d-none mt-2"></div>
 </div>
 
 <!-- Email Detail Modal -->
@@ -637,6 +646,43 @@ async function loadSettings() {
   document.getElementById("autoDeliverLow").checked = s.auto_deliver_low !== false;
   document.getElementById("retentionDays").value     = s.retention_days || 90;
 }
+
+document.getElementById("exportBtn").addEventListener("click", (e) => {
+  e.preventDefault();
+  const url = `${TENANT_URL}/v1/export`;
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "gomail-export.json";
+  a.rel = "noopener";
+  // Fetch with auth then trigger blob download
+  fetch(url, { headers: { Authorization: "Bearer " + apiKey } })
+    .then(r => r.blob())
+    .then(blob => {
+      const blobUrl = URL.createObjectURL(blob);
+      a.href = blobUrl;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    });
+});
+
+document.getElementById("deleteDataBtn").addEventListener("click", async () => {
+  if (!confirm("This will permanently erase all audit logs, quarantine records, and policy embeddings for your organization. This cannot be undone.\n\nContinue?")) return;
+  const alert = document.getElementById("delete-data-alert");
+  const res = await fetch(`${TENANT_URL}/v1/data`, {
+    method: "DELETE",
+    headers: { Authorization: "Bearer " + apiKey },
+  });
+  if (res.ok) {
+    alert.className = "alert alert-success";
+    alert.textContent = "All personal data erased.";
+  } else {
+    alert.className = "alert alert-danger";
+    alert.textContent = "Erase failed — please try again.";
+  }
+  alert.classList.remove("d-none");
+});
 
 document.getElementById("settingsForm").addEventListener("submit", async (e) => {
   e.preventDefault();

@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"fmt"
 	"time"
 
 	"github.com/lib/pq"
@@ -240,6 +241,46 @@ func (m *Models) UpsertSettings(ctx context.Context, tenantID string, s TenantSe
 	`
 	_, err := m.db.ExecContext(ctx, query, tenantID, s.AutoDeliverLow, s.RetentionDays)
 	return err
+}
+
+type TenantExport struct {
+	ExportedAt time.Time        `json:"exported_at"`
+	AuditLog   []AuditEntry     `json:"audit_log"`
+	Quarantine []QuarantineEntry `json:"quarantine"`
+}
+
+func (m *Models) ExportTenantData(ctx context.Context, tenantID string) (*TenantExport, error) {
+	audit, err := m.QueryAuditLog(ctx, tenantID, "", 10000)
+	if err != nil {
+		return nil, err
+	}
+	quarantine, err := m.QueryQuarantine(ctx, tenantID, "")
+	if err != nil {
+		return nil, err
+	}
+	return &TenantExport{
+		ExportedAt: time.Now().UTC(),
+		AuditLog:   audit,
+		Quarantine: quarantine,
+	}, nil
+}
+
+func (m *Models) DeleteTenantData(ctx context.Context, tenantID string) error {
+	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+
+	tables := []string{
+		"audit_log",
+		"quarantine",
+		"policy_embeddings",
+		"email_history_embeddings",
+	}
+	for _, table := range tables {
+		if _, err := m.db.ExecContext(ctx, `DELETE FROM `+table+` WHERE tenant_id = $1`, tenantID); err != nil {
+			return fmt.Errorf("delete from %s: %w", table, err)
+		}
+	}
+	return nil
 }
 
 func (m *Models) UpdateQuarantineStatus(ctx context.Context, id, tenantID, status string) error {

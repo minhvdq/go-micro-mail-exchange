@@ -29,6 +29,8 @@ type Store interface {
 	UpdateQuarantineStatus(ctx context.Context, id, tenantID, status string) error
 	GetSettings(ctx context.Context, tenantID string) (*data.TenantSettings, error)
 	UpsertSettings(ctx context.Context, tenantID string, s data.TenantSettings) error
+	ExportTenantData(ctx context.Context, tenantID string) (*data.TenantExport, error)
+	DeleteTenantData(ctx context.Context, tenantID string) error
 }
 
 type Embedder interface {

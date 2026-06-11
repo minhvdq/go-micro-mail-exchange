@@ -13,7 +13,7 @@ func (app *Config) routes() http.Handler {
 
 	mux.Use(cors.Handler(cors.Options{
 		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
+		AllowedMethods: []string{"GET", "POST", "DELETE", "OPTIONS"},
 		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type"},
 	}))
 	mux.Use(middleware.Logger)
@@ -29,6 +29,8 @@ func (app *Config) routes() http.Handler {
 		r.Post("/v1/quarantine/{id}/review", app.ReviewQuarantine)
 		r.Get("/v1/settings", app.GetSettings)
 		r.Post("/v1/settings", app.UpdateSettings)
+		r.Get("/v1/export", app.ExportData)
+		r.Delete("/v1/data", app.DeleteData)
 	})
 
 	return mux

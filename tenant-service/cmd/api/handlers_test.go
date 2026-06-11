@@ -58,6 +58,12 @@ func (m *mockStore) GetSettings(_ context.Context, tenantID string) (*data.Tenan
 func (m *mockStore) UpsertSettings(_ context.Context, tenantID string, s data.TenantSettings) error {
 	return m.err
 }
+func (m *mockStore) ExportTenantData(_ context.Context, tenantID string) (*data.TenantExport, error) {
+	return &data.TenantExport{}, m.err
+}
+func (m *mockStore) DeleteTenantData(_ context.Context, tenantID string) error {
+	return m.err
+}
 
 // --- mock Embedder ---
 

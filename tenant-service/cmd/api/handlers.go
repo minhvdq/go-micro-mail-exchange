@@ -319,6 +319,34 @@ func (app *Config) UpdateSettings(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (app *Config) ExportData(w http.ResponseWriter, r *http.Request) {
+	tenantID := r.Context().Value(contextKeyTenantID).(string)
+
+	export, err := app.Store.ExportTenantData(r.Context(), tenantID)
+	if err != nil {
+		app.errorJSON(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="gomail-export-%s.json"`, tenantID))
+	json.NewEncoder(w).Encode(export)
+}
+
+func (app *Config) DeleteData(w http.ResponseWriter, r *http.Request) {
+	tenantID := r.Context().Value(contextKeyTenantID).(string)
+
+	if err := app.Store.DeleteTenantData(r.Context(), tenantID); err != nil {
+		app.errorJSON(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	app.writeJSON(w, http.StatusOK, jsonResponse{
+		Error:   false,
+		Message: "all personal data erased",
+	})
+}
+
 func (app *Config) forwardToMailService(ctx context.Context, e *data.QuarantineEntry) error {
 	payload, err := json.Marshal(map[string]string{
 		"from":    e.EmailFrom,
