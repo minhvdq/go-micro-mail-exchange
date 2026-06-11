@@ -27,6 +27,8 @@ func (app *Config) routes() http.Handler {
 		r.Get("/v1/audit", app.GetAuditLog)
 		r.Get("/v1/quarantine", app.GetQuarantine)
 		r.Post("/v1/quarantine/{id}/review", app.ReviewQuarantine)
+		r.Get("/v1/policies", app.ListPolicies)
+		r.Delete("/v1/policies", app.DeletePolicy)
 		r.Get("/v1/settings", app.GetSettings)
 		r.Post("/v1/settings", app.UpdateSettings)
 		r.Get("/v1/export", app.ExportData)

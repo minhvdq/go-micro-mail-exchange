@@ -203,8 +203,20 @@
             </button>
           </div>
         </div>
-        <div class="text-muted small">
+        <div class="text-muted small mb-4">
           <strong>Tips:</strong> Plain text works best. Include rules like "No SSNs in external emails" or paste your existing acceptable-use policy. Each upload is split into chunks and embedded — uploading a new version adds to existing chunks.
+        </div>
+
+        <h6 class="mb-2">Uploaded Policies</h6>
+        <div id="policies-loading" class="text-muted small">Loading...</div>
+        <div id="policies-list" class="d-none">
+          <table class="table table-sm table-hover">
+            <thead class="table-light">
+              <tr><th>Filename</th><th>Chunks</th><th>Uploaded</th><th></th></tr>
+            </thead>
+            <tbody id="policies-tbody"></tbody>
+          </table>
+          <p id="policies-empty" class="text-muted small d-none">No policies uploaded yet.</p>
         </div>
       </div>
     </div>
@@ -682,21 +694,74 @@ function initPoliciesTab() {
   const label     = document.getElementById("policy-dropzone-label");
   const chosen    = document.getElementById("policy-file-chosen");
 
-  dropzone.addEventListener("click", () => fileInput.click());
-  dropzone.addEventListener("dragover", e => { e.preventDefault(); dropzone.classList.add("border-primary"); });
-  dropzone.addEventListener("dragleave", () => dropzone.classList.remove("border-primary"));
-  dropzone.addEventListener("drop", e => {
-    e.preventDefault();
-    dropzone.classList.remove("border-primary");
-    if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
-  });
-  fileInput.addEventListener("change", () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
+  // Only wire up drag/drop once
+  if (!dropzone._initialized) {
+    dropzone._initialized = true;
+    dropzone.addEventListener("click", () => fileInput.click());
+    dropzone.addEventListener("dragover", e => { e.preventDefault(); dropzone.classList.add("border-primary"); });
+    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("border-primary"));
+    dropzone.addEventListener("drop", e => {
+      e.preventDefault();
+      dropzone.classList.remove("border-primary");
+      if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener("change", () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
+  }
 
   function setFile(f) {
     chosen.textContent = f.name;
     chosen.classList.remove("d-none");
     label.classList.add("d-none");
     fileInput._selectedFile = f;
+  }
+
+  loadPolicies();
+}
+
+async function loadPolicies() {
+  const loading = document.getElementById("policies-loading");
+  const list    = document.getElementById("policies-list");
+  const tbody   = document.getElementById("policies-tbody");
+  const empty   = document.getElementById("policies-empty");
+
+  loading.style.display = "block";
+  list.classList.add("d-none");
+
+  const res  = await fetch(`${TENANT_URL}/v1/policies`, {
+    headers: { Authorization: "Bearer " + apiKey },
+  });
+  const data = await res.json();
+
+  loading.style.display = "none";
+  list.classList.remove("d-none");
+
+  const files = data.data || [];
+  empty.classList.toggle("d-none", files.length > 0);
+  tbody.innerHTML = "";
+
+  files.forEach(f => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="small font-monospace">${f.filename}</td>
+      <td class="small text-muted">${f.chunk_count} chunks</td>
+      <td class="small text-muted">${fmtTime(f.uploaded_at)}</td>
+      <td><button class="btn btn-sm btn-outline-danger" onclick="deletePolicy('${f.filename.replace(/'/g,"\\'")}')">Delete</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+async function deletePolicy(filename) {
+  if (!confirm(`Delete policy "${filename}"?\n\nThe agent will no longer use these rules to evaluate emails.`)) return;
+  const res = await fetch(`${TENANT_URL}/v1/policies?filename=${encodeURIComponent(filename)}`, {
+    method: "DELETE",
+    headers: { Authorization: "Bearer " + apiKey },
+  });
+  if (res.ok) {
+    loadPolicies();
+  } else {
+    const d = await res.json();
+    alert(d.message || "Delete failed.");
   }
 }
 
@@ -730,11 +795,11 @@ document.getElementById("uploadPolicyBtn").addEventListener("click", async () =>
   if (res.ok) {
     alert.className = "alert alert-success";
     alert.textContent = data.message || "Policy uploaded successfully.";
-    // Reset file selection
     fileInput.value = "";
     fileInput._selectedFile = null;
     document.getElementById("policy-file-chosen").classList.add("d-none");
     document.getElementById("policy-dropzone-label").classList.remove("d-none");
+    loadPolicies();
   } else {
     alert.className = "alert alert-danger";
     alert.textContent = data.message || "Upload failed.";

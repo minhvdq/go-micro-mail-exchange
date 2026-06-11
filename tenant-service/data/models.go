@@ -243,6 +243,54 @@ func (m *Models) GetQuarantineByID(ctx context.Context, id, tenantID string) (*Q
 	return &e, nil
 }
 
+type PolicyFile struct {
+	Filename   string    `json:"filename"`
+	ChunkCount int       `json:"chunk_count"`
+	UploadedAt time.Time `json:"uploaded_at"`
+}
+
+func (m *Models) ListPolicies(ctx context.Context, tenantID string) ([]PolicyFile, error) {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+
+	query := `
+		SELECT source_filename, COUNT(*) AS chunk_count, MAX(created_at) AS uploaded_at
+		FROM policy_embeddings
+		WHERE tenant_id = $1
+		GROUP BY source_filename
+		ORDER BY MAX(created_at) DESC
+	`
+	rows, err := m.db.QueryContext(ctx, query, tenantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var files []PolicyFile
+	for rows.Next() {
+		var f PolicyFile
+		if err := rows.Scan(&f.Filename, &f.ChunkCount, &f.UploadedAt); err != nil {
+			return nil, err
+		}
+		files = append(files, f)
+	}
+	if files == nil {
+		files = []PolicyFile{}
+	}
+	return files, rows.Err()
+}
+
+func (m *Models) DeletePolicy(ctx context.Context, tenantID, filename string) error {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+
+	_, err := m.db.ExecContext(ctx,
+		`DELETE FROM policy_embeddings WHERE tenant_id = $1 AND source_filename = $2`,
+		tenantID, filename,
+	)
+	return err
+}
+
 type TenantSettings struct {
 	AutoDeliverLow bool `json:"auto_deliver_low"`
 	RetentionDays  int  `json:"retention_days"`

@@ -319,6 +319,41 @@ func (app *Config) UpdateSettings(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (app *Config) ListPolicies(w http.ResponseWriter, r *http.Request) {
+	tenantID := r.Context().Value(contextKeyTenantID).(string)
+
+	files, err := app.Store.ListPolicies(r.Context(), tenantID)
+	if err != nil {
+		app.errorJSON(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	app.writeJSON(w, http.StatusOK, jsonResponse{
+		Error:   false,
+		Message: fmt.Sprintf("%d policies", len(files)),
+		Data:    files,
+	})
+}
+
+func (app *Config) DeletePolicy(w http.ResponseWriter, r *http.Request) {
+	tenantID := r.Context().Value(contextKeyTenantID).(string)
+	filename := r.URL.Query().Get("filename")
+	if filename == "" {
+		app.errorJSON(w, fmt.Errorf("filename is required"), http.StatusBadRequest)
+		return
+	}
+
+	if err := app.Store.DeletePolicy(r.Context(), tenantID, filename); err != nil {
+		app.errorJSON(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	app.writeJSON(w, http.StatusOK, jsonResponse{
+		Error:   false,
+		Message: fmt.Sprintf("policy %q deleted", filename),
+	})
+}
+
 func (app *Config) ExportData(w http.ResponseWriter, r *http.Request) {
 	tenantID := r.Context().Value(contextKeyTenantID).(string)
 

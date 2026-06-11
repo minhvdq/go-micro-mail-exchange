@@ -32,6 +32,8 @@ type Store interface {
 	UpsertSettings(ctx context.Context, tenantID string, s data.TenantSettings) error
 	ExportTenantData(ctx context.Context, tenantID string) (*data.TenantExport, error)
 	DeleteTenantData(ctx context.Context, tenantID string) error
+	ListPolicies(ctx context.Context, tenantID string) ([]data.PolicyFile, error)
+	DeletePolicy(ctx context.Context, tenantID, filename string) error
 }
 
 type Embedder interface {

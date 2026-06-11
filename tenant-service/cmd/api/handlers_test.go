@@ -64,6 +64,12 @@ func (m *mockStore) ExportTenantData(_ context.Context, tenantID string) (*data.
 func (m *mockStore) DeleteTenantData(_ context.Context, tenantID string) error {
 	return m.err
 }
+func (m *mockStore) ListPolicies(_ context.Context, tenantID string) ([]data.PolicyFile, error) {
+	return []data.PolicyFile{}, m.err
+}
+func (m *mockStore) DeletePolicy(_ context.Context, tenantID, filename string) error {
+	return m.err
+}
 
 // --- mock Embedder ---
 
