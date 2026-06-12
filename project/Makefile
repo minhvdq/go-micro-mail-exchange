@@ -4,6 +4,15 @@ MAIL_BINARY=mailServiceApp
 TENANT_BINARY=tenantApp
 COMPLIANCE_BINARY=complianceApp
 
+## migrate: applies all SQL migrations in order against the running postgres container
+migrate:
+	@echo "Applying migrations..."
+	@for f in $(shell ls ../db-migrations/*.sql | sort); do \
+		echo "  -> $$f"; \
+		docker exec -i $$(docker ps -qf "name=postgres") psql -U postgres -d users < $$f; \
+	done
+	@echo "Migrations done!"
+
 ## up: starts all containers in the background without forcing build
 up:
 	@echo "Starting Docker images..."
