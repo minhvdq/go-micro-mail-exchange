@@ -63,7 +63,11 @@ func (app *Config) Register(w http.ResponseWriter, r *http.Request) {
 		domain := domainFromEmail(req.Email)
 		tenant, err := app.Store.CreateTenantWithDomain(ctx, req.OrgName, domain)
 		if err != nil {
-			app.errorJSON(w, fmt.Errorf("create org: %w", err), http.StatusInternalServerError)
+			if strings.Contains(err.Error(), "unique") {
+				app.errorJSON(w, fmt.Errorf("an organization is already registered for domain %s", domain), http.StatusConflict)
+			} else {
+				app.errorJSON(w, fmt.Errorf("create org: %w", err), http.StatusInternalServerError)
+			}
 			return
 		}
 		tenantID = tenant.ID
