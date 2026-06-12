@@ -1,10 +1,8 @@
-FRONT_END_BINARY=frontApp
+FRONTEND_BINARY=frontendApp
 BROKER_BINARY=brokerApp
-AUTH_BINARY = authApp
-LOGGER_BINARY = loggerServiceApp
-MAIL_BINARY = mailServiceApp
-LISTENER_BINARY = listenerApp
-FRONTEND_BINARY = frontendApp
+MAIL_BINARY=mailServiceApp
+TENANT_BINARY=tenantApp
+COMPLIANCE_BINARY=complianceApp
 
 ## up: starts all containers in the background without forcing build
 up:
@@ -13,7 +11,7 @@ up:
 	@echo "Docker images started!"
 
 ## up_build: stops docker-compose (if running), builds all projects and starts docker compose
-up_build: build_broker build_auth build_logger build_mail build_listener build_tenant build_compliance build_frontend
+up_build: build_broker build_mail build_tenant build_compliance build_frontend
 	@echo "Stopping docker images (if running...)"
 	docker compose down
 	@echo "Building (when required) and starting docker images..."
@@ -32,68 +30,41 @@ build_broker:
 	cd ../broker-service && env GOOS=linux CGO_ENABLED=0 go build -o ${BROKER_BINARY} ./cmd/api
 	@echo "Done!"
 
+## build_mail: builds the mail binary as a linux executable
+build_mail:
+	@echo "Building mail binary..."
+	cd ../mail-service && env GOOS=linux CGO_ENABLED=0 go build -o ${MAIL_BINARY} ./cmd/api
+	@echo "Done!"
+
+## build_tenant: builds the tenant-service binary as a linux executable
+build_tenant:
+	@echo "Building tenant service binary..."
+	cd ../tenant-service && env GOOS=linux CGO_ENABLED=0 go build -o ${TENANT_BINARY} ./cmd/api
+	@echo "Done!"
+
+## build_compliance: builds the ai-compliance-service binary as a linux executable
+build_compliance:
+	@echo "Building ai-compliance-service binary..."
+	cd ../ai-compliance-service && env GOOS=linux CGO_ENABLED=0 go build -o ${COMPLIANCE_BINARY} ./cmd/api
+	@echo "Done!"
+
 ## build_frontend: builds the frontend binary as a linux executable
 build_frontend:
 	@echo "Building frontend binary..."
 	cd ../front-end && env GOOS=linux CGO_ENABLED=0 go build -o ${FRONTEND_BINARY} ./cmd/web
 	@echo "Done!"
 
-## build_logger: builds the logger binary as a linux executable
-build_logger:
-	@echo "Building logger binary..."
-	cd ../logger-service && env GOOS=linux CGO_ENABLED=0 go build -o ${LOGGER_BINARY} ./cmd/api
-	@echo "Done!"
-
-## build_auth: builds the auth binary as a linux executable
-build_auth:
-	@echo "Building auth binary..."
-	cd ../authentication-service && env GOOS=linux CGO_ENABLED=0 go build -o ${AUTH_BINARY} ./cmd/api
-	@echo "Done!"
-
-## build_tenant: builds the tenant-service binary as a linux executable
-build_tenant:
-	@echo "Building tenant service binary..."
-	cd ../tenant-service && env GOOS=linux CGO_ENABLED=0 go build -o tenantApp ./cmd/api
-	@echo "Done!"
-
-## build_compliance: builds the ai-compliance-service binary as a linux executable
-build_compliance:
-	@echo "Building ai-compliance-service binary..."
-	cd ../ai-compliance-service && env GOOS=linux CGO_ENABLED=0 go build -o complianceApp ./cmd/api
-	@echo "Done!"
-
-## build_mail: builds the mail binary as a linux executable
-build_listener:
-	@echo "Building listener binary..."
-	cd ../listener-service && env GOOS=linux CGO_ENABLED=0 go build -o ${LISTENER_BINARY} .
-	@echo "Done!"
-
-## build_auth: builds the mail binary as a linux executable
-build_mail:
-	@echo "Building mail binary..."
-	cd ../mail-service && env GOOS=linux CGO_ENABLED=0 go build -o ${MAIL_BINARY} ./cmd/api
-	@echo "Done!"
-
-
-## build_front: builds the frone end binary
-build_front:
-	@echo "Building front end binary..."
-	cd ../front-end && env CGO_ENABLED=0 go build -o ${FRONT_END_BINARY} ./cmd/web
-	@echo "Done!"
-
-## start: starts the front end
+## start: builds and runs the front end locally (dev)
 start: build_front
 	@echo "Starting front end"
-	cd ../front-end && ./${FRONT_END_BINARY} &
+	cd ../front-end && ./${FRONTEND_BINARY} &
 
 ## stop: stop the front end
 stop:
 	@echo "Stopping front end..."
-	@-pkill -SIGTERM -f "./${FRONT_END_BINARY}"
+	@-pkill -SIGTERM -f "./${FRONTEND_BINARY}"
 	@echo "Stopped front end!"
 
 restart:
 	make stop
 	make start
-
-
