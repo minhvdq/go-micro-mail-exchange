@@ -1,37 +1,76 @@
 {{template "base" .}}
 
 {{define "content"}}
-<!-- Setup Screen -->
-<div id="setup-screen" style="display:none;">
+<!-- Auth Screen -->
+<div id="auth-screen" style="display:none;">
   <div class="container d-flex justify-content-center align-items-center" style="min-height:100vh;">
     <div class="col-12 col-md-5">
+      <div class="text-center mb-4">
+        <h3 class="fw-bold">GoMailGuard</h3>
+        <p class="text-muted small">AI-powered email protection for your team</p>
+      </div>
       <div class="card shadow-sm">
         <div class="card-body p-4">
-          <h4 class="mb-1">GoMailGuard</h4>
-          <p class="text-muted mb-4">Enter your API key to continue, or register a new organization.</p>
+          <!-- Auth tabs -->
+          <ul class="nav nav-tabs mb-4" id="authTabs">
+            <li class="nav-item">
+              <a class="nav-link active" href="#" id="loginTabBtn">Sign In</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" id="registerTabBtn">Create Account</a>
+            </li>
+          </ul>
 
-          <div id="setup-error" class="alert alert-danger d-none"></div>
+          <div id="auth-error" class="alert alert-danger d-none small"></div>
 
-          <div class="mb-3">
-            <label class="form-label fw-semibold">API Key</label>
-            <input type="text" class="form-control font-monospace" id="apiKeyInput" placeholder="Paste your API key...">
-          </div>
-          <button class="btn btn-primary w-100 mb-3" id="saveKeyBtn">Save & Continue</button>
-
-          <hr class="my-3">
-          <p class="text-muted small mb-2">No account yet? Register a new organization:</p>
-          <div class="mb-2">
-            <input type="text" class="form-control" id="orgNameInput" placeholder="Organization name">
-          </div>
-          <button class="btn btn-outline-primary w-100" id="registerBtn">Register Organization</button>
-          <div id="register-result" class="mt-3 d-none">
-            <div class="alert alert-success small p-2">
-              <strong>Organization created!</strong><br>
-              Tenant ID: <span id="new-tenant-id" class="font-monospace"></span><br>
-              API Key: <span id="new-api-key" class="font-monospace"></span><br>
-              <small class="text-muted">Copy your API key — it won't be shown again.</small>
+          <!-- Login form -->
+          <form id="loginForm">
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" id="loginEmail" autocomplete="email">
             </div>
-          </div>
+            <div class="mb-3">
+              <label class="form-label">Password</label>
+              <input type="password" class="form-control" id="loginPassword" autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+              <span id="loginSpinner" class="spinner-border spinner-border-sm me-2 d-none"></span>
+              Sign In
+            </button>
+          </form>
+
+          <!-- Register form -->
+          <form id="registerForm" style="display:none;">
+            <div class="row g-2 mb-3">
+              <div class="col">
+                <label class="form-label">First Name</label>
+                <input type="text" class="form-control" id="regFirstName" autocomplete="given-name">
+              </div>
+              <div class="col">
+                <label class="form-label">Last Name</label>
+                <input type="text" class="form-control" id="regLastName" autocomplete="family-name">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Work Email</label>
+              <input type="email" class="form-control" id="regEmail" autocomplete="email">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Password <span class="text-muted small">(min 8 chars)</span></label>
+              <input type="password" class="form-control" id="regPassword" autocomplete="new-password">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">
+                Organization Name
+                <span class="text-muted small">(leave blank to auto-join your company's account)</span>
+              </label>
+              <input type="text" class="form-control" id="regOrgName" placeholder="Acme Corp — only needed if you're the account owner">
+            </div>
+            <button type="submit" class="btn btn-primary w-100">
+              <span id="registerSpinner" class="spinner-border spinner-border-sm me-2 d-none"></span>
+              Create Account
+            </button>
+          </form>
         </div>
       </div>
     </div>
@@ -42,17 +81,23 @@
 <div id="main-app" style="display:none;">
   <nav class="navbar navbar-expand navbar-dark bg-dark px-4">
     <span class="navbar-brand fw-bold">GoMailGuard</span>
-    <ul class="navbar-nav ms-auto me-3">
+    <ul class="navbar-nav ms-auto me-3" id="navLinks">
       <li class="nav-item"><a class="nav-link" href="#" data-tab="check">Check Email</a></li>
       <li class="nav-item"><a class="nav-link" href="#" data-tab="send">Send Email</a></li>
-      <li class="nav-item"><a class="nav-link" href="#" data-tab="audit">Audit Log</a></li>
-      <li class="nav-item"><a class="nav-link" href="#" data-tab="policies">Policies</a></li>
       <li class="nav-item"><a class="nav-link" href="#" data-tab="quarantine">
         Quarantine <span id="quarantine-badge" class="badge bg-warning text-dark ms-1" style="display:none;"></span>
       </a></li>
-      <li class="nav-item"><a class="nav-link" href="#" data-tab="settings">Settings</a></li>
+      <!-- owner-only tabs -->
+      <li class="nav-item owner-only d-none"><a class="nav-link" href="#" data-tab="releases">
+        Reviews <span id="releases-badge" class="badge bg-danger ms-1" style="display:none;"></span>
+      </a></li>
+      <li class="nav-item owner-only d-none"><a class="nav-link" href="#" data-tab="audit">Audit Log</a></li>
+      <li class="nav-item owner-only d-none"><a class="nav-link" href="#" data-tab="policies">Policies</a></li>
+      <li class="nav-item owner-only d-none"><a class="nav-link" href="#" data-tab="members">Team</a></li>
+      <li class="nav-item owner-only d-none"><a class="nav-link" href="#" data-tab="settings">Settings</a></li>
     </ul>
-    <button class="btn btn-outline-light btn-sm" id="logoutBtn">Logout</button>
+    <small class="text-secondary me-3" id="navUserEmail"></small>
+    <button class="btn btn-outline-light btn-sm" id="logoutBtn">Sign Out</button>
   </nav>
 
   <!-- Check Email Tab -->
@@ -85,8 +130,6 @@
             </button>
           </div>
         </div>
-
-        <!-- Result card — hidden until a check completes -->
         <div id="check-result" class="d-none">
           <div id="check-result-card" class="card shadow-sm border-0">
             <div class="card-body">
@@ -148,7 +191,52 @@
     </div>
   </div>
 
-  <!-- Audit Log Tab -->
+  <!-- Quarantine Tab -->
+  <div id="tab-quarantine" class="tab-pane container-fluid py-4" style="display:none;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h5 class="mb-0">My Quarantine</h5>
+        <p id="quarantine-scope-note" class="text-muted small mb-0"></p>
+      </div>
+      <button class="btn btn-outline-secondary btn-sm" id="quarantineRefreshBtn">Refresh</button>
+    </div>
+    <div id="quarantine-loading" class="text-center py-5 text-muted">Loading...</div>
+    <div id="quarantine-table-wrap" class="d-none">
+      <table class="table table-hover table-sm">
+        <thead class="table-dark">
+          <tr>
+            <th>Time</th><th>From</th><th>To</th><th>Subject</th>
+            <th>Priority</th><th>Status</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="quarantine-tbody"></tbody>
+      </table>
+      <p id="quarantine-empty" class="text-center text-muted py-4 d-none">No items in quarantine.</p>
+    </div>
+  </div>
+
+  <!-- HIGH Review Requests Tab (owner only) -->
+  <div id="tab-releases" class="tab-pane container-fluid py-4" style="display:none;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h5 class="mb-0">HIGH Risk Review Requests</h5>
+        <p class="text-muted small mb-0">Employees requesting you approve or permanently erase a blocked email.</p>
+      </div>
+      <button class="btn btn-outline-secondary btn-sm" id="releasesRefreshBtn">Refresh</button>
+    </div>
+    <div id="releases-loading" class="text-center py-5 text-muted">Loading...</div>
+    <div id="releases-table-wrap" class="d-none">
+      <table class="table table-hover table-sm">
+        <thead class="table-dark">
+          <tr><th>Time</th><th>Subject</th><th>Sender</th><th>Requested By</th><th>Note</th><th>Status</th><th>Action</th></tr>
+        </thead>
+        <tbody id="releases-tbody"></tbody>
+      </table>
+      <p id="releases-empty" class="text-center text-muted py-4 d-none">No review requests.</p>
+    </div>
+  </div>
+
+  <!-- Audit Log Tab (owner only) -->
   <div id="tab-audit" class="tab-pane container-fluid py-4" style="display:none;">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h5 class="mb-0">Audit Log</h5>
@@ -167,14 +255,7 @@
     <div id="audit-table-wrap" class="d-none">
       <table class="table table-hover table-sm">
         <thead class="table-dark">
-          <tr>
-            <th>Time</th>
-            <th>From</th>
-            <th>Subject</th>
-            <th>Verdict</th>
-            <th>Action</th>
-            <th>Violations</th>
-          </tr>
+          <tr><th>Time</th><th>From</th><th>Subject</th><th>Verdict</th><th>Action</th><th>Violations</th></tr>
         </thead>
         <tbody id="audit-tbody"></tbody>
       </table>
@@ -182,12 +263,12 @@
     </div>
   </div>
 
-  <!-- Policies Tab -->
+  <!-- Policies Tab (owner only) -->
   <div id="tab-policies" class="tab-pane container py-4" style="display:none;">
     <div class="row justify-content-center">
       <div class="col-md-7">
         <h5 class="mb-1">Compliance Policies</h5>
-        <p class="text-muted small mb-4">Upload plain-text or PDF policy documents. The agent uses these to evaluate emails against your organization's rules.</p>
+        <p class="text-muted small mb-4">Upload plain-text policy documents. The AI uses these to evaluate emails against your rules.</p>
         <div id="policy-alert" class="d-none mb-3"></div>
         <div class="card shadow-sm mb-4">
           <div class="card-body">
@@ -203,10 +284,6 @@
             </button>
           </div>
         </div>
-        <div class="text-muted small mb-4">
-          <strong>Tips:</strong> Plain text works best. Include rules like "No SSNs in external emails" or paste your existing acceptable-use policy. Each upload is split into chunks and embedded — uploading a new version adds to existing chunks.
-        </div>
-
         <h6 class="mb-2">Uploaded Policies</h6>
         <div id="policies-loading" class="text-muted small">Loading...</div>
         <div id="policies-list" class="d-none">
@@ -222,72 +299,77 @@
     </div>
   </div>
 
-  <!-- Quarantine Tab -->
-  <div id="tab-quarantine" class="tab-pane container-fluid py-4" style="display:none;">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="mb-0">Quarantine Queue</h5>
-      <button class="btn btn-outline-secondary btn-sm" id="quarantineRefreshBtn">Refresh</button>
-    </div>
-    <div id="quarantine-loading" class="text-center py-5 text-muted">Loading...</div>
-    <div id="quarantine-table-wrap" class="d-none">
-      <table class="table table-hover table-sm">
-        <thead class="table-dark">
-          <tr>
-            <th>Time</th>
-            <th>From</th>
-            <th>To</th>
-            <th>Subject</th>
-            <th>Violations</th>
-            <th>Priority</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="quarantine-tbody"></tbody>
-      </table>
-      <p id="quarantine-empty" class="text-center text-muted py-4 d-none">No items in quarantine.</p>
-    </div>
-  </div>
-</div>
-
-<!-- Settings Tab -->
-<div id="tab-settings" class="tab-pane container py-4" style="display:none;">
-  <h5 class="mb-4">Compliance Settings</h5>
-  <div id="settings-alert" class="d-none mb-3"></div>
-  <form id="settingsForm" style="max-width:480px;">
-    <div class="card mb-4">
-      <div class="card-header fw-semibold">Email Routing</div>
-      <div class="card-body">
-        <div class="form-check form-switch mb-3">
-          <input class="form-check-input" type="checkbox" id="autoDeliverLow" checked>
-          <label class="form-check-label" for="autoDeliverLow">
-            Auto-deliver <span class="badge bg-info">LOW</span> emails after redaction
-            <div class="text-muted small">When off, LOW emails go to quarantine for manual review.</div>
-          </label>
+  <!-- Team Tab (owner only) -->
+  <div id="tab-members" class="tab-pane container py-4" style="display:none;">
+    <div class="row justify-content-center">
+      <div class="col-md-7">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h5 class="mb-0">Team Members</h5>
+          <button class="btn btn-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#inviteForm">+ Invite</button>
+        </div>
+        <div id="inviteForm" class="collapse mb-4">
+          <div class="card">
+            <div class="card-body">
+              <div id="invite-alert" class="d-none mb-2"></div>
+              <div class="input-group">
+                <input type="email" class="form-control" id="inviteEmail" placeholder="colleague@company.com">
+                <button class="btn btn-primary" id="inviteBtn">Add Member</button>
+              </div>
+              <p class="text-muted small mt-2 mb-0">They'll receive an invite email. All members join with User access — only you can see the full quarantine picture.</p>
+            </div>
+          </div>
+        </div>
+        <div id="members-loading" class="text-muted small">Loading...</div>
+        <div id="members-list" class="d-none">
+          <table class="table table-sm">
+            <thead class="table-light">
+              <tr><th>Email</th><th>Name</th><th>Role</th><th>Since</th><th></th></tr>
+            </thead>
+            <tbody id="members-tbody"></tbody>
+          </table>
         </div>
       </div>
     </div>
-    <div class="card mb-4">
-      <div class="card-header fw-semibold">Data Retention</div>
-      <div class="card-body">
-        <label class="form-label" for="retentionDays">Retain audit &amp; quarantine data for</label>
-        <div class="input-group" style="max-width:200px;">
-          <input type="number" class="form-control" id="retentionDays" min="1" max="3650" value="90">
-          <span class="input-group-text">days</span>
+  </div>
+
+  <!-- Settings Tab (owner only) -->
+  <div id="tab-settings" class="tab-pane container py-4" style="display:none;">
+    <h5 class="mb-4">Compliance Settings</h5>
+    <div id="settings-alert" class="d-none mb-3"></div>
+    <form id="settingsForm" style="max-width:480px;">
+      <div class="card mb-4">
+        <div class="card-header fw-semibold">Email Routing</div>
+        <div class="card-body">
+          <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="autoDeliverLow" checked>
+            <label class="form-check-label" for="autoDeliverLow">
+              Auto-deliver <span class="badge bg-info">LOW</span> emails after redaction
+              <div class="text-muted small">When off, LOW emails go to personal quarantine for self-review.</div>
+            </label>
+          </div>
         </div>
       </div>
+      <div class="card mb-4">
+        <div class="card-header fw-semibold">Data Retention</div>
+        <div class="card-body">
+          <label class="form-label" for="retentionDays">Retain audit &amp; quarantine data for</label>
+          <div class="input-group" style="max-width:200px;">
+            <input type="number" class="form-control" id="retentionDays" min="1" max="3650" value="90">
+            <span class="input-group-text">days</span>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">Save Settings</button>
+    </form>
+    <hr class="my-4">
+    <h6 class="mb-3">Data Management</h6>
+    <div class="d-flex gap-2">
+      <a id="exportBtn" href="#" class="btn btn-outline-secondary btn-sm">Export My Data</a>
+      <button id="deleteDataBtn" class="btn btn-outline-danger btn-sm">Erase All Data</button>
     </div>
-    <button type="submit" class="btn btn-primary">Save Settings</button>
-  </form>
-
-  <hr class="my-4">
-  <h6 class="mb-3">Data Management</h6>
-  <div class="d-flex gap-2">
-    <a id="exportBtn" href="#" class="btn btn-outline-secondary btn-sm">Export My Data</a>
-    <button id="deleteDataBtn" class="btn btn-outline-danger btn-sm">Erase All Personal Data</button>
+    <p class="text-muted small mt-2">Export downloads a JSON file of all records. Erase permanently deletes all email data — your account is kept.</p>
+    <div id="delete-data-alert" class="d-none mt-2"></div>
   </div>
-  <p class="text-muted small mt-2">Export downloads a JSON file of all audit and quarantine records. Erase permanently deletes all email data (audit log, quarantine, policy embeddings) — your account and API key are kept.</p>
-  <div id="delete-data-alert" class="d-none mt-2"></div>
 </div>
 
 <!-- Email Detail Modal -->
@@ -308,6 +390,14 @@
         <pre id="modalBody" class="bg-light p-3 rounded" style="white-space:pre-wrap;font-size:.9em;"></pre>
         <div id="modalViolations" class="mt-2"></div>
         <div id="modalReasoning" class="mt-2 text-muted small"></div>
+        <!-- Request review form (HIGH items, non-owner) -->
+        <div id="modalRequestReview" class="mt-3 d-none">
+          <hr>
+          <p class="small fw-semibold mb-1">Request owner review</p>
+          <textarea class="form-control form-control-sm mb-2" id="reviewNote" rows="2" placeholder="Explain why this may be a false positive..."></textarea>
+          <button class="btn btn-sm btn-outline-primary" id="submitReviewBtn">Send Request to Owner</button>
+          <div id="reviewRequestAlert" class="mt-2 d-none"></div>
+        </div>
       </div>
       <div class="modal-footer" id="modalActions"></div>
     </div>
@@ -317,70 +407,190 @@
 
 {{define "js"}}
 <script>
-const BROKER_URL    = {{.BrokerURL}};
-const TENANT_URL    = {{.TenantSvcURL}};
-const STORAGE_KEY   = "gomail_api_key";
-const TENANT_ID_KEY = "gomail_tenant_id";
+const BROKER_URL  = {{.BrokerURL}};
+const TENANT_URL  = {{.TenantSvcURL}};
 
-let apiKey   = localStorage.getItem(STORAGE_KEY)   || "";
-let tenantID = localStorage.getItem(TENANT_ID_KEY) || "";
+// ── Storage keys ──────────────────────────────────────────────────────────────
+const K_ACCESS  = "gm_access";
+const K_REFRESH = "gm_refresh";
+const K_TENANT  = "gm_tenant";
+const K_ROLE    = "gm_role";
+const K_EMAIL   = "gm_email";
+
+let accessToken  = localStorage.getItem(K_ACCESS)  || "";
+let refreshToken = localStorage.getItem(K_REFRESH) || "";
+let tenantID     = localStorage.getItem(K_TENANT)  || "";
+let userRole     = localStorage.getItem(K_ROLE)    || "";
+let userEmail    = localStorage.getItem(K_EMAIL)   || "";
+
+let quarantineCache = [];
 let currentModal = null;
+
+// ── Auth-aware fetch ──────────────────────────────────────────────────────────
+async function apiFetch(url, opts = {}) {
+  opts.headers = { ...(opts.headers || {}), Authorization: "Bearer " + accessToken };
+  let res = await fetch(url, opts);
+  if (res.status === 401 && refreshToken) {
+    const ok = await tryRefresh();
+    if (!ok) { logout(); return res; }
+    opts.headers.Authorization = "Bearer " + accessToken;
+    res = await fetch(url, opts);
+  }
+  return res;
+}
+
+async function tryRefresh() {
+  try {
+    const res = await fetch(`${TENANT_URL}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+    if (!res.ok) return false;
+    const d = await res.json();
+    accessToken = d.access_token;
+    localStorage.setItem(K_ACCESS, accessToken);
+    return true;
+  } catch { return false; }
+}
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 function boot() {
-  if (apiKey) {
+  if (accessToken) {
     showApp();
     showTab("check");
   } else {
-    document.getElementById("setup-screen").style.display = "block";
+    document.getElementById("auth-screen").style.display = "block";
   }
+}
+
+function storeAuth(data) {
+  accessToken  = data.access_token;
+  refreshToken = data.refresh_token;
+  tenantID     = data.tenant_id;
+  userRole     = data.role;
+  userEmail    = data.user?.email || "";
+  localStorage.setItem(K_ACCESS,  accessToken);
+  localStorage.setItem(K_REFRESH, refreshToken);
+  localStorage.setItem(K_TENANT,  tenantID);
+  localStorage.setItem(K_ROLE,    userRole);
+  localStorage.setItem(K_EMAIL,   userEmail);
 }
 
 function showApp() {
-  document.getElementById("setup-screen").style.display = "none";
-  document.getElementById("main-app").style.display     = "block";
+  document.getElementById("auth-screen").style.display = "none";
+  document.getElementById("main-app").style.display    = "block";
+  document.getElementById("navUserEmail").textContent  = userEmail;
+  // Show owner-only nav items
+  if (userRole === "owner") {
+    document.querySelectorAll(".owner-only").forEach(el => el.classList.remove("d-none"));
+  }
+  // Quarantine scope note
+  const note = document.getElementById("quarantine-scope-note");
+  note.textContent = userRole === "owner"
+    ? "Showing all team quarantine entries."
+    : "Showing only emails addressed to you.";
 }
 
-// ── Setup ─────────────────────────────────────────────────────────────────────
-document.getElementById("saveKeyBtn").addEventListener("click", () => {
-  const key = document.getElementById("apiKeyInput").value.trim();
-  if (!key) return;
-  apiKey = key;
-  localStorage.setItem(STORAGE_KEY, key);
-  showApp();
-  showTab("send");
-});
-
-document.getElementById("registerBtn").addEventListener("click", async () => {
-  const name = document.getElementById("orgNameInput").value.trim();
-  if (!name) return;
-  const res  = await fetch(`${TENANT_URL}/v1/organizations`, {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({name}),
-  });
-  const data = await res.json();
-  if (data.error) {
-    document.getElementById("setup-error").textContent = data.message;
-    document.getElementById("setup-error").classList.remove("d-none");
-    return;
+function logout() {
+  if (refreshToken) {
+    fetch(`${TENANT_URL}/auth/logout`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    }).catch(() => {});
   }
-  tenantID = data.data.tenant_id;
-  apiKey   = data.data.api_key;
-  localStorage.setItem(STORAGE_KEY,   apiKey);
-  localStorage.setItem(TENANT_ID_KEY, tenantID);
-  document.getElementById("new-tenant-id").textContent = tenantID;
-  document.getElementById("new-api-key").textContent   = apiKey;
-  document.getElementById("register-result").classList.remove("d-none");
-  document.getElementById("apiKeyInput").value = apiKey;
+  [K_ACCESS, K_REFRESH, K_TENANT, K_ROLE, K_EMAIL].forEach(k => localStorage.removeItem(k));
+  accessToken = refreshToken = tenantID = userRole = userEmail = "";
+  document.getElementById("main-app").style.display    = "none";
+  document.getElementById("auth-screen").style.display = "block";
+  // Reset owner tabs
+  document.querySelectorAll(".owner-only").forEach(el => el.classList.add("d-none"));
+}
+
+document.getElementById("logoutBtn").addEventListener("click", logout);
+
+// ── Auth tab switching ────────────────────────────────────────────────────────
+document.getElementById("loginTabBtn").addEventListener("click", e => {
+  e.preventDefault();
+  document.getElementById("loginForm").style.display    = "";
+  document.getElementById("registerForm").style.display = "none";
+  document.getElementById("loginTabBtn").classList.add("active");
+  document.getElementById("registerTabBtn").classList.remove("active");
+  document.getElementById("auth-error").classList.add("d-none");
+});
+document.getElementById("registerTabBtn").addEventListener("click", e => {
+  e.preventDefault();
+  document.getElementById("loginForm").style.display    = "none";
+  document.getElementById("registerForm").style.display = "";
+  document.getElementById("registerTabBtn").classList.add("active");
+  document.getElementById("loginTabBtn").classList.remove("active");
+  document.getElementById("auth-error").classList.add("d-none");
 });
 
-document.getElementById("logoutBtn").addEventListener("click", () => {
-  localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem(TENANT_ID_KEY);
-  apiKey = ""; tenantID = "";
-  document.getElementById("main-app").style.display     = "none";
-  document.getElementById("setup-screen").style.display = "block";
+function showAuthError(msg) {
+  const el = document.getElementById("auth-error");
+  el.textContent = msg;
+  el.classList.remove("d-none");
+}
+
+// ── Login ─────────────────────────────────────────────────────────────────────
+document.getElementById("loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const spinner = document.getElementById("loginSpinner");
+  spinner.classList.remove("d-none");
+  document.getElementById("auth-error").classList.add("d-none");
+
+  try {
+    const res = await fetch(`${TENANT_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email:    document.getElementById("loginEmail").value.trim(),
+        password: document.getElementById("loginPassword").value,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) { showAuthError(data.message || "Login failed."); return; }
+    storeAuth(data);
+    showApp();
+    showTab("check");
+  } catch(err) {
+    showAuthError("Network error: " + err.message);
+  } finally {
+    spinner.classList.add("d-none");
+  }
+});
+
+// ── Register ──────────────────────────────────────────────────────────────────
+document.getElementById("registerForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const spinner = document.getElementById("registerSpinner");
+  spinner.classList.remove("d-none");
+  document.getElementById("auth-error").classList.add("d-none");
+
+  try {
+    const res = await fetch(`${TENANT_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email:      document.getElementById("regEmail").value.trim(),
+        password:   document.getElementById("regPassword").value,
+        first_name: document.getElementById("regFirstName").value.trim(),
+        last_name:  document.getElementById("regLastName").value.trim(),
+        org_name:   document.getElementById("regOrgName").value.trim(),
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) { showAuthError(data.message || "Registration failed."); return; }
+    storeAuth(data);
+    showApp();
+    showTab("check");
+  } catch(err) {
+    showAuthError("Network error: " + err.message);
+  } finally {
+    spinner.classList.remove("d-none");
+  }
 });
 
 // ── Tab nav ───────────────────────────────────────────────────────────────────
@@ -391,12 +601,17 @@ document.querySelectorAll("[data-tab]").forEach(el => {
 function showTab(name) {
   document.querySelectorAll(".tab-pane").forEach(p => p.style.display = "none");
   document.querySelectorAll("[data-tab]").forEach(a => a.classList.remove("active"));
-  document.getElementById("tab-" + name).style.display = "block";
-  document.querySelector(`[data-tab="${name}"]`).classList.add("active");
+  const pane = document.getElementById("tab-" + name);
+  if (!pane) return;
+  pane.style.display = "block";
+  const link = document.querySelector(`[data-tab="${name}"]`);
+  if (link) link.classList.add("active");
   if (name === "audit")      loadAudit();
   if (name === "quarantine") loadQuarantine();
   if (name === "settings")   loadSettings();
   if (name === "policies")   initPoliciesTab();
+  if (name === "releases")   loadReleases();
+  if (name === "members")    loadMembers();
 }
 
 // ── Check Email ───────────────────────────────────────────────────────────────
@@ -407,29 +622,22 @@ document.getElementById("checkBtn").addEventListener("click", async () => {
   const message = document.getElementById("checkMessage").value.trim();
   const spinner = document.getElementById("checkSpinner");
   const btn     = document.getElementById("checkBtn");
-  const result  = document.getElementById("check-result");
 
   if (!from || !to || !message) return;
-
-  result.classList.add("d-none");
-  spinner.classList.remove("d-none");
-  btn.disabled = true;
+  document.getElementById("check-result").classList.add("d-none");
+  spinner.classList.remove("d-none"); btn.disabled = true;
 
   try {
-    const res  = await fetch(`${TENANT_URL}/v1/check`, {
+    const res  = await apiFetch(`${TENANT_URL}/v1/check`, {
       method: "POST",
-      headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ from, to, subject, message }),
     });
     const data = await res.json();
     if (data.error) { alert(data.message); return; }
     renderCheckResult(data.data);
-  } catch(e) {
-    alert("Network error: " + e.message);
-  } finally {
-    spinner.classList.add("d-none");
-    btn.disabled = false;
-  }
+  } catch(e) { alert("Network error: " + e.message); }
+  finally { spinner.classList.add("d-none"); btn.disabled = false; }
 });
 
 function renderCheckResult(d) {
@@ -437,51 +645,32 @@ function renderCheckResult(d) {
   const cardBorders   = { CLEAN:"border-success", LOW:"border-info", MEDIUM:"border-warning", HIGH:"border-danger" };
   const routingText   = {
     CLEAN:  "✓ Compliant — would be delivered.",
-    LOW:    "⚠ Minor violation — would be auto-remediated and delivered (or quarantined if auto-deliver is off).",
-    MEDIUM: "⚑ Policy violation — would be sent to quarantine for human review.",
-    HIGH:   "✕ Serious violation — would be quarantined with HIGH priority for immediate review.",
+    LOW:    "⚠ Minor issue — would be auto-remediated and delivered (or sent to your personal quarantine if auto-deliver is off).",
+    MEDIUM: "⚑ Policy violation — would go to your personal quarantine for self-review.",
+    HIGH:   "✕ Serious violation — would be blocked and locked until the account owner reviews.",
   };
   const verdict = d.verdict || "UNKNOWN";
-
-  const card = document.getElementById("check-result-card");
-  card.className = "card shadow-sm border-2 " + (cardBorders[verdict] || "border-secondary");
-
+  document.getElementById("check-result-card").className = "card shadow-sm border-2 " + (cardBorders[verdict] || "border-secondary");
   const badge = document.getElementById("check-verdict-badge");
   badge.className = "badge fs-6 bg-" + (verdictColors[verdict] || "secondary");
   badge.textContent = verdict;
-
   const ctx = document.getElementById("check-routing-context");
   ctx.textContent = routingText[verdict] || "";
   ctx.className = "small mb-3 text-" + (verdictColors[verdict] || "secondary");
-
   const violations = d.violations || [];
   const violWrap = document.getElementById("check-violations-wrap");
   if (violations.length) {
-    document.getElementById("check-violations").innerHTML =
-      violations.map(v => `<span class="badge bg-danger me-1 mb-1">${v}</span>`).join("");
+    document.getElementById("check-violations").innerHTML = violations.map(v => `<span class="badge bg-danger me-1 mb-1">${v}</span>`).join("");
     violWrap.classList.remove("d-none");
-  } else {
-    violWrap.classList.add("d-none");
-  }
-
+  } else { violWrap.classList.add("d-none"); }
   const reasoning = d.reasoning || "";
   const reasonWrap = document.getElementById("check-reasoning-wrap");
-  if (reasoning) {
-    document.getElementById("check-reasoning").textContent = reasoning;
-    reasonWrap.classList.remove("d-none");
-  } else {
-    reasonWrap.classList.add("d-none");
-  }
-
+  if (reasoning) { document.getElementById("check-reasoning").textContent = reasoning; reasonWrap.classList.remove("d-none"); }
+  else { reasonWrap.classList.add("d-none"); }
   const remediated = d.remediated_body || "";
   const remWrap = document.getElementById("check-remediated-wrap");
-  if (remediated) {
-    document.getElementById("check-remediated").textContent = remediated;
-    remWrap.classList.remove("d-none");
-  } else {
-    remWrap.classList.add("d-none");
-  }
-
+  if (remediated) { document.getElementById("check-remediated").textContent = remediated; remWrap.classList.remove("d-none"); }
+  else { remWrap.classList.add("d-none"); }
   document.getElementById("check-result").classList.remove("d-none");
 }
 
@@ -500,62 +689,232 @@ document.getElementById("sendBtn").addEventListener("click", async () => {
     alertEl.textContent = "All fields are required.";
     return;
   }
-
   spinner.classList.remove("d-none");
   document.getElementById("sendBtn").disabled = true;
 
   try {
-    const res  = await fetch(`${BROKER_URL}/handle`, {
+    const res = await fetch(`${BROKER_URL}/handle`, {
       method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({
-        Action: "mail",
-        mail: { from, to, subject, message, tenant_id: tenantID },
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ Action: "mail", mail: { from, to, subject, message, tenant_id: tenantID } }),
     });
     const data = await res.json();
     if (data.error) {
-      alertEl.className   = "alert alert-danger";
-      alertEl.textContent = data.message;
+      alertEl.className = "alert alert-danger"; alertEl.textContent = data.message;
     } else {
-      alertEl.className   = "alert alert-success";
-      alertEl.textContent = "Email submitted for compliance review.";
-      document.getElementById("sendFrom").value    = "";
-      document.getElementById("sendTo").value      = "";
-      document.getElementById("sendSubject").value = "";
-      document.getElementById("sendMessage").value = "";
+      alertEl.className = "alert alert-success"; alertEl.textContent = "Email submitted for compliance review.";
+      ["sendFrom","sendTo","sendSubject","sendMessage"].forEach(id => document.getElementById(id).value = "");
     }
-  } catch(e) {
-    alertEl.className   = "alert alert-danger";
-    alertEl.textContent = "Network error: " + e.message;
-  } finally {
-    spinner.classList.add("d-none");
-    document.getElementById("sendBtn").disabled = false;
-  }
+  } catch(e) { alertEl.className = "alert alert-danger"; alertEl.textContent = "Network error: " + e.message; }
+  finally { spinner.classList.add("d-none"); document.getElementById("sendBtn").disabled = false; }
 });
+
+// ── Quarantine ────────────────────────────────────────────────────────────────
+async function loadQuarantine() {
+  const loading = document.getElementById("quarantine-loading");
+  const wrap    = document.getElementById("quarantine-table-wrap");
+  const tbody   = document.getElementById("quarantine-tbody");
+  const empty   = document.getElementById("quarantine-empty");
+  const badge   = document.getElementById("quarantine-badge");
+
+  loading.style.display = "block"; wrap.classList.add("d-none");
+
+  const res  = await apiFetch(`${TENANT_URL}/v1/quarantine?status=`);
+  const data = await res.json();
+  quarantineCache = data.data || [];
+
+  loading.style.display = "none"; wrap.classList.remove("d-none");
+
+  const pending = quarantineCache.filter(e => e.status === "pending").length;
+  badge.textContent   = pending;
+  badge.style.display = pending > 0 ? "inline" : "none";
+
+  tbody.innerHTML = "";
+  empty.classList.toggle("d-none", quarantineCache.length > 0);
+
+  quarantineCache.forEach(e => {
+    const tr = document.createElement("tr");
+    if (e.status === "pending") tr.className = e.priority === "high" ? "table-danger" : "table-warning";
+    tr.innerHTML = `
+      <td class="text-nowrap small">${fmtTime(e.created_at)}</td>
+      <td class="small">${e.email_from}</td>
+      <td class="small">${e.email_to}</td>
+      <td class="small">${e.subject || "—"}</td>
+      <td>${priorityBadge(e.priority)}</td>
+      <td>${statusBadge(e.status)}</td>
+      <td>${quarantineActions(e)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function quarantineActions(e) {
+  if (e.status !== "pending") return `<span class="text-muted small">${e.status}</span>`;
+  if (e.priority === "high") {
+    // HIGH: only owner can release/reject; users can request review
+    if (userRole === "owner") {
+      return `<button class="btn btn-sm btn-outline-primary me-1" onclick="openModal('${e.id}')">Review</button>
+              <button class="btn btn-sm btn-success me-1" onclick="doReview('${e.id}','release')">Release</button>
+              <button class="btn btn-sm btn-danger" onclick="doReview('${e.id}','reject')">Erase</button>`;
+    }
+    return `<button class="btn btn-sm btn-outline-secondary" onclick="openModal('${e.id}')">View &amp; Request Review</button>`;
+  }
+  // MEDIUM: self-service for everyone
+  return `<button class="btn btn-sm btn-outline-primary me-1" onclick="openModal('${e.id}')">Review</button>
+          <button class="btn btn-sm btn-success me-1" onclick="doReview('${e.id}','release')">Release</button>
+          <button class="btn btn-sm btn-danger" onclick="doReview('${e.id}','reject')">Discard</button>`;
+}
+
+document.getElementById("quarantineRefreshBtn").addEventListener("click", loadQuarantine);
+
+async function doReview(id, action) {
+  await apiFetch(`${TENANT_URL}/v1/quarantine/${id}/review`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action }),
+  });
+  if (currentModal) { currentModal.hide(); currentModal = null; }
+  loadQuarantine();
+}
+
+function openModal(id) {
+  const e = quarantineCache.find(x => x.id === id);
+  if (!e) return;
+
+  document.getElementById("modalSubject").textContent = e.subject || "(no subject)";
+  document.getElementById("modalFrom").textContent    = e.email_from;
+  document.getElementById("modalTo").textContent      = e.email_to;
+  document.getElementById("modalBody").textContent    = e.body;
+  document.getElementById("modalPriorityBadge").innerHTML = priorityBadge(e.priority);
+  document.getElementById("modalViolations").innerHTML =
+    (e.violations||[]).length
+      ? "<strong>Violations:</strong> " + e.violations.map(v => `<span class="badge bg-danger me-1">${v}</span>`).join("")
+      : "";
+  document.getElementById("modalReasoning").textContent = e.reasoning ? "Reasoning: " + e.reasoning : "";
+
+  // Actions footer
+  const actions = document.getElementById("modalActions");
+  const reqReview = document.getElementById("modalRequestReview");
+  reqReview.classList.add("d-none");
+
+  if (e.status !== "pending") {
+    actions.innerHTML = `<span class="text-muted">Already ${e.status}</span>`;
+  } else if (e.priority === "high" && userRole !== "owner") {
+    // User can only request review for HIGH items
+    actions.innerHTML = "";
+    reqReview.classList.remove("d-none");
+    document.getElementById("reviewNote").value = "";
+    document.getElementById("reviewRequestAlert").classList.add("d-none");
+    document.getElementById("submitReviewBtn").onclick = () => submitReviewRequest(e.id);
+  } else if (userRole === "owner") {
+    actions.innerHTML = `
+      <button class="btn btn-success" onclick="doReview('${e.id}','release')">Release &amp; Deliver</button>
+      <button class="btn btn-danger ms-2" onclick="doReview('${e.id}','reject')">Permanently Erase</button>`;
+  } else {
+    // MEDIUM, non-owner — self-service
+    actions.innerHTML = `
+      <button class="btn btn-success" onclick="doReview('${e.id}','release')">Release</button>
+      <button class="btn btn-danger ms-2" onclick="doReview('${e.id}','reject')">Discard</button>`;
+  }
+
+  currentModal = new bootstrap.Modal(document.getElementById("emailModal"));
+  currentModal.show();
+}
+
+async function submitReviewRequest(quarantineID) {
+  const note     = document.getElementById("reviewNote").value.trim();
+  const alertEl  = document.getElementById("reviewRequestAlert");
+  const btn      = document.getElementById("submitReviewBtn");
+
+  btn.disabled = true;
+  try {
+    const res = await apiFetch(`${TENANT_URL}/v1/quarantine/${quarantineID}/release-request`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ note }),
+    });
+    const data = await res.json();
+    alertEl.className = res.ok ? "alert alert-success small" : "alert alert-danger small";
+    alertEl.textContent = res.ok ? "Request sent to your account owner." : (data.message || "Failed.");
+    alertEl.classList.remove("d-none");
+  } catch(err) {
+    alertEl.className = "alert alert-danger small";
+    alertEl.textContent = "Network error.";
+    alertEl.classList.remove("d-none");
+  } finally { btn.disabled = false; }
+}
+
+// ── HIGH Review Requests (owner only) ─────────────────────────────────────────
+async function loadReleases() {
+  const loading = document.getElementById("releases-loading");
+  const wrap    = document.getElementById("releases-table-wrap");
+  const tbody   = document.getElementById("releases-tbody");
+  const empty   = document.getElementById("releases-empty");
+  const badge   = document.getElementById("releases-badge");
+
+  loading.style.display = "block"; wrap.classList.add("d-none");
+
+  const res  = await apiFetch(`${TENANT_URL}/v1/release-requests`);
+  const data = await res.json();
+  const requests = Array.isArray(data) ? data : (data.data || []);
+
+  loading.style.display = "none"; wrap.classList.remove("d-none");
+
+  const pending = requests.filter(r => r.status === "pending").length;
+  badge.textContent   = pending;
+  badge.style.display = pending > 0 ? "inline" : "none";
+
+  tbody.innerHTML = "";
+  empty.classList.toggle("d-none", requests.length > 0);
+
+  requests.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="text-nowrap small">${fmtTime(r.created_at)}</td>
+      <td class="small">${r.subject || "—"}</td>
+      <td class="small">${r.email_from}</td>
+      <td class="small">${r.requester_email}</td>
+      <td class="small text-muted">${r.note || "—"}</td>
+      <td>${statusBadge(r.status)}</td>
+      <td>${r.status === "pending" ? `
+        <button class="btn btn-sm btn-success me-1" onclick="actionRequest('${r.id}','approved')">Approve</button>
+        <button class="btn btn-sm btn-danger" onclick="actionRequest('${r.id}','denied')">Deny</button>
+      ` : ""}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById("releasesRefreshBtn").addEventListener("click", loadReleases);
+
+async function actionRequest(id, action) {
+  await apiFetch(`${TENANT_URL}/v1/release-requests/${id}/action`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action }),
+  });
+  loadReleases();
+  loadQuarantine();
+}
 
 // ── Audit Log ─────────────────────────────────────────────────────────────────
 async function loadAudit() {
-  const verdict  = document.getElementById("auditFilter").value;
-  const loading  = document.getElementById("audit-loading");
-  const wrap     = document.getElementById("audit-table-wrap");
-  const tbody    = document.getElementById("audit-tbody");
-  const empty    = document.getElementById("audit-empty");
+  const verdict = document.getElementById("auditFilter").value;
+  const loading = document.getElementById("audit-loading");
+  const wrap    = document.getElementById("audit-table-wrap");
+  const tbody   = document.getElementById("audit-tbody");
+  const empty   = document.getElementById("audit-empty");
 
-  loading.style.display = "block";
-  wrap.classList.add("d-none");
+  loading.style.display = "block"; wrap.classList.add("d-none");
 
-  const url = `${TENANT_URL}/v1/audit${verdict ? "?verdict=" + verdict : ""}`;
-  const res = await fetch(url, { headers: { Authorization: "Bearer " + apiKey } });
+  const res  = await apiFetch(`${TENANT_URL}/v1/audit${verdict ? "?verdict=" + verdict : ""}`);
   const data = await res.json();
 
-  loading.style.display = "none";
-  wrap.classList.remove("d-none");
+  loading.style.display = "none"; wrap.classList.remove("d-none");
 
   const entries = data.data || [];
   tbody.innerHTML = "";
   empty.classList.toggle("d-none", entries.length > 0);
-
   entries.forEach(e => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -569,123 +928,8 @@ async function loadAudit() {
     tbody.appendChild(tr);
   });
 }
-
 document.getElementById("auditFilter").addEventListener("change", loadAudit);
 document.getElementById("auditRefreshBtn").addEventListener("click", loadAudit);
-
-// ── Quarantine ────────────────────────────────────────────────────────────────
-let quarantineCache = [];
-
-async function loadQuarantine() {
-  const loading = document.getElementById("quarantine-loading");
-  const wrap    = document.getElementById("quarantine-table-wrap");
-  const tbody   = document.getElementById("quarantine-tbody");
-  const empty   = document.getElementById("quarantine-empty");
-  const badge   = document.getElementById("quarantine-badge");
-
-  loading.style.display = "block";
-  wrap.classList.add("d-none");
-
-  const res  = await fetch(`${TENANT_URL}/v1/quarantine?status=`, {
-    headers: { Authorization: "Bearer " + apiKey },
-  });
-  const data = await res.json();
-  quarantineCache = data.data || [];
-
-  loading.style.display = "none";
-  wrap.classList.remove("d-none");
-
-  const entries = quarantineCache;
-  const pending = entries.filter(e => e.status === "pending").length;
-  badge.textContent     = pending;
-  badge.style.display   = pending > 0 ? "inline" : "none";
-
-  tbody.innerHTML = "";
-  empty.classList.toggle("d-none", entries.length > 0);
-
-  entries.forEach(e => {
-    const tr = document.createElement("tr");
-    if (e.status === "pending") {
-      tr.className = e.priority === "high" ? "table-danger" : "table-warning";
-    }
-    tr.innerHTML = `
-      <td class="text-nowrap small">${fmtTime(e.created_at)}</td>
-      <td class="small">${e.email_from}</td>
-      <td class="small">${e.email_to}</td>
-      <td class="small">${e.subject || "—"}</td>
-      <td class="small text-muted">${(e.violations||[]).join(", ") || "—"}</td>
-      <td>${priorityBadge(e.priority)}</td>
-      <td>${statusBadge(e.status)}</td>
-      <td>
-        ${e.status === "pending" ? `
-          <button class="btn btn-sm btn-outline-primary me-1" onclick="openModal('${e.id}')">Review</button>
-          <button class="btn btn-sm btn-success me-1"         onclick="doReview('${e.id}','release')">Release</button>
-          <button class="btn btn-sm btn-danger"               onclick="doReview('${e.id}','reject')">Reject</button>
-        ` : `<span class="text-muted small">Reviewed</span>`}
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-document.getElementById("quarantineRefreshBtn").addEventListener("click", loadQuarantine);
-
-async function doReview(id, action) {
-  await fetch(`${TENANT_URL}/v1/quarantine/${id}/review`, {
-    method: "POST",
-    headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
-    body: JSON.stringify({ action }),
-  });
-  if (currentModal) { currentModal.hide(); currentModal = null; }
-  loadQuarantine();
-}
-
-function openModal(id) {
-  const e = quarantineCache.find(x => x.id === id);
-  if (!e) return;
-
-  document.getElementById("modalSubject").textContent  = e.subject || "(no subject)";
-  document.getElementById("modalFrom").textContent     = e.email_from;
-  document.getElementById("modalTo").textContent       = e.email_to;
-  document.getElementById("modalBody").textContent     = e.body;
-  document.getElementById("modalPriorityBadge").innerHTML = priorityBadge(e.priority);
-  document.getElementById("modalViolations").innerHTML =
-    (e.violations||[]).length
-      ? "<strong>Violations:</strong> " + e.violations.map(v => `<span class="badge bg-danger me-1">${v}</span>`).join("")
-      : "";
-  document.getElementById("modalReasoning").textContent = e.reasoning ? "Reasoning: " + e.reasoning : "";
-
-  const actions = document.getElementById("modalActions");
-  actions.innerHTML = e.status === "pending"
-    ? `<button class="btn btn-success" onclick="doReview('${e.id}','release')">Release &amp; Deliver</button>
-       <button class="btn btn-danger ms-2" onclick="doReview('${e.id}','reject')">Reject</button>`
-    : `<span class="text-muted">Already ${e.status}</span>`;
-
-  currentModal = new bootstrap.Modal(document.getElementById("emailModal"));
-  currentModal.show();
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function verdictBadge(v) {
-  const colors = { CLEAN:"success", LOW:"info", MEDIUM:"warning", HIGH:"danger" };
-  return `<span class="badge bg-${colors[v]||'secondary'}">${v}</span>`;
-}
-
-function statusBadge(s) {
-  const colors = { pending:"warning", released:"success", rejected:"secondary" };
-  return `<span class="badge bg-${colors[s]||'secondary'} text-dark">${s}</span>`;
-}
-
-function priorityBadge(p) {
-  return p === "high"
-    ? `<span class="badge bg-danger">HIGH</span>`
-    : `<span class="badge bg-warning text-dark">MEDIUM</span>`;
-}
-
-function fmtTime(iso) {
-  const d = new Date(iso);
-  return d.toLocaleDateString() + " " + d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
-}
 
 // ── Policies ──────────────────────────────────────────────────────────────────
 function initPoliciesTab() {
@@ -693,28 +937,21 @@ function initPoliciesTab() {
   const fileInput = document.getElementById("policyFile");
   const label     = document.getElementById("policy-dropzone-label");
   const chosen    = document.getElementById("policy-file-chosen");
-
-  // Only wire up drag/drop once
   if (!dropzone._initialized) {
     dropzone._initialized = true;
     dropzone.addEventListener("click", () => fileInput.click());
     dropzone.addEventListener("dragover", e => { e.preventDefault(); dropzone.classList.add("border-primary"); });
     dropzone.addEventListener("dragleave", () => dropzone.classList.remove("border-primary"));
     dropzone.addEventListener("drop", e => {
-      e.preventDefault();
-      dropzone.classList.remove("border-primary");
+      e.preventDefault(); dropzone.classList.remove("border-primary");
       if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
     });
     fileInput.addEventListener("change", () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
   }
-
   function setFile(f) {
-    chosen.textContent = f.name;
-    chosen.classList.remove("d-none");
-    label.classList.add("d-none");
+    chosen.textContent = f.name; chosen.classList.remove("d-none"); label.classList.add("d-none");
     fileInput._selectedFile = f;
   }
-
   loadPolicies();
 }
 
@@ -724,21 +961,13 @@ async function loadPolicies() {
   const tbody   = document.getElementById("policies-tbody");
   const empty   = document.getElementById("policies-empty");
 
-  loading.style.display = "block";
-  list.classList.add("d-none");
-
-  const res  = await fetch(`${TENANT_URL}/v1/policies`, {
-    headers: { Authorization: "Bearer " + apiKey },
-  });
+  loading.style.display = "block"; list.classList.add("d-none");
+  const res  = await apiFetch(`${TENANT_URL}/v1/policies`);
   const data = await res.json();
-
-  loading.style.display = "none";
-  list.classList.remove("d-none");
-
+  loading.style.display = "none"; list.classList.remove("d-none");
   const files = data.data || [];
   empty.classList.toggle("d-none", files.length > 0);
   tbody.innerHTML = "";
-
   files.forEach(f => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -752,132 +981,149 @@ async function loadPolicies() {
 }
 
 async function deletePolicy(filename) {
-  if (!confirm(`Delete policy "${filename}"?\n\nThe agent will no longer use these rules to evaluate emails.`)) return;
-  const res = await fetch(`${TENANT_URL}/v1/policies?filename=${encodeURIComponent(filename)}`, {
-    method: "DELETE",
-    headers: { Authorization: "Bearer " + apiKey },
-  });
-  if (res.ok) {
-    loadPolicies();
-  } else {
-    const d = await res.json();
-    alert(d.message || "Delete failed.");
-  }
+  if (!confirm(`Delete policy "${filename}"?`)) return;
+  const res = await apiFetch(`${TENANT_URL}/v1/policies?filename=${encodeURIComponent(filename)}`, { method: "DELETE" });
+  if (res.ok) loadPolicies();
+  else { const d = await res.json(); alert(d.message || "Delete failed."); }
 }
 
 document.getElementById("uploadPolicyBtn").addEventListener("click", async () => {
   const fileInput = document.getElementById("policyFile");
   const file = fileInput._selectedFile || fileInput.files[0];
-  const alert   = document.getElementById("policy-alert");
+  const alertEl = document.getElementById("policy-alert");
   const spinner = document.getElementById("uploadPolicySpinner");
-
-  if (!file) {
-    alert.className = "alert alert-warning";
-    alert.textContent = "Please select a policy file first.";
-    alert.classList.remove("d-none");
-    return;
-  }
-
-  spinner.classList.remove("d-none");
-  alert.classList.add("d-none");
-
-  const form = new FormData();
-  form.append("policy", file);
-
-  const res = await fetch(`${TENANT_URL}/v1/policies`, {
-    method: "POST",
-    headers: { Authorization: "Bearer " + apiKey },
-    body: form,
-  });
+  if (!file) { alertEl.className = "alert alert-warning"; alertEl.textContent = "Select a file first."; alertEl.classList.remove("d-none"); return; }
+  spinner.classList.remove("d-none"); alertEl.classList.add("d-none");
+  const form = new FormData(); form.append("policy", file);
+  const res  = await apiFetch(`${TENANT_URL}/v1/policies`, { method: "POST", body: form });
   spinner.classList.add("d-none");
-
   const data = await res.json();
+  alertEl.className = res.ok ? "alert alert-success" : "alert alert-danger";
+  alertEl.textContent = res.ok ? (data.message || "Uploaded.") : (data.message || "Upload failed.");
+  alertEl.classList.remove("d-none");
   if (res.ok) {
-    alert.className = "alert alert-success";
-    alert.textContent = data.message || "Policy uploaded successfully.";
-    fileInput.value = "";
-    fileInput._selectedFile = null;
+    fileInput.value = ""; fileInput._selectedFile = null;
     document.getElementById("policy-file-chosen").classList.add("d-none");
     document.getElementById("policy-dropzone-label").classList.remove("d-none");
     loadPolicies();
-  } else {
-    alert.className = "alert alert-danger";
-    alert.textContent = data.message || "Upload failed.";
   }
-  alert.classList.remove("d-none");
 });
+
+// ── Team Members ──────────────────────────────────────────────────────────────
+async function loadMembers() {
+  const loading = document.getElementById("members-loading");
+  const list    = document.getElementById("members-list");
+  const tbody   = document.getElementById("members-tbody");
+
+  loading.style.display = "block"; list.classList.add("d-none");
+  const res  = await apiFetch(`${TENANT_URL}/v1/members`);
+  const data = await res.json();
+  loading.style.display = "none"; list.classList.remove("d-none");
+
+  const members = Array.isArray(data) ? data : (data.data || []);
+  tbody.innerHTML = "";
+  members.forEach(m => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="small">${m.email}</td>
+      <td class="small">${[m.first_name, m.last_name].filter(Boolean).join(" ") || "—"}</td>
+      <td><span class="badge ${m.role === 'owner' ? 'bg-primary' : 'bg-secondary'}">${m.role}</span></td>
+      <td class="small text-muted">${fmtTime(m.created_at)}</td>
+      <td>${m.role !== 'owner' ? `<button class="btn btn-sm btn-outline-danger" onclick="removeMember('${m.id}','${m.email}')">Remove</button>` : ""}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById("inviteBtn").addEventListener("click", async () => {
+  const email   = document.getElementById("inviteEmail").value.trim();
+  const alertEl = document.getElementById("invite-alert");
+  if (!email) return;
+  const res  = await apiFetch(`${TENANT_URL}/v1/members`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  const data = await res.json();
+  alertEl.className = res.ok ? "alert alert-success small" : "alert alert-danger small";
+  alertEl.textContent = res.ok ? "Member added." : (data.message || "Failed.");
+  alertEl.classList.remove("d-none");
+  if (res.ok) { document.getElementById("inviteEmail").value = ""; loadMembers(); }
+});
+
+async function removeMember(id, email) {
+  if (!confirm(`Remove ${email} from your organization?`)) return;
+  await apiFetch(`${TENANT_URL}/v1/members/${id}`, { method: "DELETE" });
+  loadMembers();
+}
 
 // ── Settings ──────────────────────────────────────────────────────────────────
 async function loadSettings() {
-  const res = await fetch(`${TENANT_URL}/v1/settings`, {
-    headers: { Authorization: "Bearer " + apiKey },
-  });
+  const res = await apiFetch(`${TENANT_URL}/v1/settings`);
   if (!res.ok) return;
   const data = await res.json();
   const s = data.data || {};
   document.getElementById("autoDeliverLow").checked = s.auto_deliver_low !== false;
-  document.getElementById("retentionDays").value     = s.retention_days || 90;
+  document.getElementById("retentionDays").value    = s.retention_days || 90;
 }
 
-document.getElementById("exportBtn").addEventListener("click", (e) => {
+document.getElementById("settingsForm").addEventListener("submit", async e => {
   e.preventDefault();
-  const url = `${TENANT_URL}/v1/export`;
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "gomail-export.json";
-  a.rel = "noopener";
-  // Fetch with auth then trigger blob download
-  fetch(url, { headers: { Authorization: "Bearer " + apiKey } })
+  const alertEl = document.getElementById("settings-alert");
+  const res = await apiFetch(`${TENANT_URL}/v1/settings`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      auto_deliver_low: document.getElementById("autoDeliverLow").checked,
+      retention_days:   parseInt(document.getElementById("retentionDays").value, 10) || 90,
+    }),
+  });
+  alertEl.className = res.ok ? "alert alert-success" : "alert alert-danger";
+  alertEl.textContent = res.ok ? "Settings saved." : "Failed to save settings.";
+  alertEl.classList.remove("d-none");
+  setTimeout(() => alertEl.classList.add("d-none"), 3000);
+});
+
+document.getElementById("exportBtn").addEventListener("click", e => {
+  e.preventDefault();
+  apiFetch(`${TENANT_URL}/v1/export`)
     .then(r => r.blob())
     .then(blob => {
-      const blobUrl = URL.createObjectURL(blob);
-      a.href = blobUrl;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "gomail-export.json";
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(a.href);
     });
 });
 
 document.getElementById("deleteDataBtn").addEventListener("click", async () => {
-  if (!confirm("This will permanently erase all audit logs, quarantine records, and policy embeddings for your organization. This cannot be undone.\n\nContinue?")) return;
-  const alert = document.getElementById("delete-data-alert");
-  const res = await fetch(`${TENANT_URL}/v1/data`, {
-    method: "DELETE",
-    headers: { Authorization: "Bearer " + apiKey },
-  });
-  if (res.ok) {
-    alert.className = "alert alert-success";
-    alert.textContent = "All personal data erased.";
-  } else {
-    alert.className = "alert alert-danger";
-    alert.textContent = "Erase failed — please try again.";
-  }
-  alert.classList.remove("d-none");
+  if (!confirm("Permanently erase all audit logs, quarantine records, and policy embeddings?\n\nThis cannot be undone.")) return;
+  const alertEl = document.getElementById("delete-data-alert");
+  const res = await apiFetch(`${TENANT_URL}/v1/data`, { method: "DELETE" });
+  alertEl.className = res.ok ? "alert alert-success" : "alert alert-danger";
+  alertEl.textContent = res.ok ? "All data erased." : "Erase failed — try again.";
+  alertEl.classList.remove("d-none");
 });
 
-document.getElementById("settingsForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const alert = document.getElementById("settings-alert");
-  const body = {
-    auto_deliver_low: document.getElementById("autoDeliverLow").checked,
-    retention_days:   parseInt(document.getElementById("retentionDays").value, 10) || 90,
-  };
-  const res = await fetch(`${TENANT_URL}/v1/settings`, {
-    method: "POST",
-    headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (res.ok) {
-    alert.className = "alert alert-success";
-    alert.textContent = "Settings saved.";
-  } else {
-    alert.className = "alert alert-danger";
-    alert.textContent = "Failed to save settings.";
-  }
-  alert.classList.remove("d-none");
-  setTimeout(() => alert.classList.add("d-none"), 3000);
-});
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function verdictBadge(v) {
+  const c = { CLEAN:"success", LOW:"info", MEDIUM:"warning", HIGH:"danger" };
+  return `<span class="badge bg-${c[v]||'secondary'}">${v}</span>`;
+}
+function statusBadge(s) {
+  const c = { pending:"warning", released:"success", rejected:"secondary", approved:"success", denied:"secondary" };
+  return `<span class="badge bg-${c[s]||'secondary'} text-dark">${s}</span>`;
+}
+function priorityBadge(p) {
+  return p === "high"
+    ? `<span class="badge bg-danger">HIGH</span>`
+    : `<span class="badge bg-warning text-dark">MEDIUM</span>`;
+}
+function fmtTime(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString() + " " + d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+}
 
 boot();
 </script>
