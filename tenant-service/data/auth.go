@@ -6,6 +6,8 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"errors"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -321,26 +323,168 @@ func (m *Models) ListReleaseRequests(ctx context.Context, tenantID, status strin
 	return results, rows.Err()
 }
 
-func (m *Models) ActionReleaseRequest(ctx context.Context, requestID, tenantID, reviewerID, action string) error {
+func (m *Models) ActionReleaseRequest(ctx context.Context, requestID, tenantID, reviewerID, action string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
 	defer cancel()
-
-	res, err := m.db.ExecContext(ctx, `
+	var quarantineID string
+	err := m.db.QueryRowContext(ctx, `
 		UPDATE release_requests
 		SET status = $1, reviewed_by = $2, reviewed_at = NOW()
 		WHERE id = $3 AND tenant_id = $4 AND status = 'pending'
-	`, action, reviewerID, requestID, tenantID)
+		RETURNING quarantine_id
+	`, action, reviewerID, requestID, tenantID).Scan(&quarantineID)
+	if err == sql.ErrNoRows {
+		return "", sql.ErrNoRows
+	}
+	return quarantineID, err
+}
+
+// FindOrCreateSSOUser finds an existing user by SSO identity or email, or creates a new one.
+// Returns the user, their primary tenant, their role, and any error.
+func (m *Models) FindOrCreateSSOUser(ctx context.Context, provider, providerUserID, email, firstName, lastName string) (*User, *Tenant, string, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	// 1. Look up by (provider, provider_user_id)
+	var user User
+	err := m.db.QueryRowContext(ctx, `
+		SELECT id, email, first_name, last_name, email_verified, created_at
+		FROM users WHERE auth_provider = $1 AND provider_user_id = $2
+	`, provider, providerUserID).Scan(&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.EmailVerified, &user.CreatedAt)
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, nil, "", err
+	}
+
+	if err == nil {
+		t, role, tErr := m.GetUserPrimaryTenant(ctx, user.ID)
+		if tErr != nil {
+			return &user, nil, "", tErr
+		}
+		return &user, t, role, nil
+	}
+
+	// 2. Fall back to email match — link SSO provider to existing account
+	existing, emailErr := m.GetUserByEmail(ctx, email)
+	if emailErr == nil {
+		_, _ = m.db.ExecContext(ctx,
+			`UPDATE users SET auth_provider = $1, provider_user_id = $2, email_verified = TRUE WHERE id = $3`,
+			provider, providerUserID, existing.ID,
+		)
+		t, role, tErr := m.GetUserPrimaryTenant(ctx, existing.ID)
+		if tErr == sql.ErrNoRows {
+			t, role, tErr = m.ssoCreateDefaultOrg(ctx, existing.ID, email)
+		}
+		return existing, t, role, tErr
+	}
+
+	// 3. Brand new user
+	if firstName == "" {
+		firstName = strings.Split(email, "@")[0]
+	}
+	err = m.db.QueryRowContext(ctx, `
+		INSERT INTO users (email, first_name, last_name, email_verified, auth_provider, provider_user_id)
+		VALUES ($1, $2, $3, TRUE, $4, $5)
+		RETURNING id, email, first_name, last_name, email_verified, created_at
+	`, email, firstName, lastName, provider, providerUserID).Scan(
+		&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.EmailVerified, &user.CreatedAt,
+	)
 	if err != nil {
-		return err
+		return nil, nil, "", err
 	}
-	n, _ := res.RowsAffected()
-	if n == 0 {
-		return sql.ErrNoRows
+	t, role, tErr := m.ssoCreateDefaultOrg(ctx, user.ID, email)
+	return &user, t, role, tErr
+}
+
+func (m *Models) ssoCreateDefaultOrg(ctx context.Context, userID, email string) (*Tenant, string, error) {
+	parts := strings.SplitN(email, "@", 2)
+	orgName := parts[0] + "'s workspace"
+
+	var t Tenant
+	err := m.db.QueryRowContext(ctx,
+		`INSERT INTO tenants (name) VALUES ($1) RETURNING id, name, plan, created_at`,
+		orgName,
+	).Scan(&t.ID, &t.Name, &t.Plan, &t.CreatedAt)
+	if err != nil {
+		return nil, "", err
 	}
-	return nil
+	_, err = m.db.ExecContext(ctx,
+		`INSERT INTO org_members (user_id, tenant_id, role) VALUES ($1, $2, 'owner')`,
+		userID, t.ID,
+	)
+	return &t, "owner", err
+}
+
+// StartTrial sets plan=trial and trial_ends_at=now+14d. No-op if already on a paid plan.
+func (m *Models) StartTrial(ctx context.Context, tenantID string) error {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	_, err := m.db.ExecContext(ctx,
+		`UPDATE tenants SET plan = 'trial', trial_ends_at = NOW() + INTERVAL '14 days'
+		 WHERE id = $1 AND plan = 'free'`,
+		tenantID,
+	)
+	return err
 }
 
 // CheckPassword returns nil if the password matches the hash.
 func CheckPassword(hash, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+}
+
+func (m *Models) DeleteUser(ctx context.Context, userID string) error {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	_, err := m.db.ExecContext(ctx, `DELETE FROM users WHERE id = $1`, userID)
+	return err
+}
+
+func (m *Models) CreateVerificationToken(ctx context.Context, userID string) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	rawToken := hex.EncodeToString(b)
+	hash := sha256.Sum256([]byte(rawToken))
+	tokenHash := hex.EncodeToString(hash[:])
+
+	_, err := m.db.ExecContext(ctx,
+		`UPDATE users SET verification_token = $1, verification_token_expires_at = NOW() + INTERVAL '24 hours' WHERE id = $2`,
+		tokenHash, userID,
+	)
+	return rawToken, err
+}
+
+func (m *Models) VerifyEmail(ctx context.Context, rawToken string) error {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+
+	hash := sha256.Sum256([]byte(rawToken))
+	tokenHash := hex.EncodeToString(hash[:])
+
+	var userID string
+	err := m.db.QueryRowContext(ctx, `
+		UPDATE users
+		SET email_verified = TRUE, verification_token = NULL, verification_token_expires_at = NULL
+		WHERE verification_token = $1 AND verification_token_expires_at > NOW()
+		RETURNING id`,
+		tokenHash,
+	).Scan(&userID)
+	if err == sql.ErrNoRows {
+		return errors.New("invalid or expired verification token")
+	}
+	if err != nil {
+		return err
+	}
+
+	// Verify owned domains so team members can auto-join
+	_, _ = m.db.ExecContext(ctx,
+		`UPDATE tenants SET domain_verified = TRUE
+		 WHERE id IN (SELECT tenant_id FROM org_members WHERE user_id = $1 AND role = 'owner')`,
+		userID,
+	)
+	return nil
 }

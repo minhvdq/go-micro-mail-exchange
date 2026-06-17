@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 )
 
 type Config struct {
@@ -33,18 +32,9 @@ func main() {
 }
 
 func createMail() Mail {
-	port, _ := strconv.Atoi(os.Getenv("MAIL_PORT"))
-
-	m := Mail{
-		Domain:      os.Getenv("MAIL_DOMAIN"),
-		Host:        os.Getenv("MAIL_HOST"),
-		Port:        port,
-		Username:    os.Getenv("MAIL_USERNAME"),
-		Password:    os.Getenv("MAIL_PASSWORD"),
-		Encryption:  os.Getenv("MAIL_ENCRYPTION"),
+	return Mail{
+		APIKey:      os.Getenv("BREVO_API_KEY"),
 		FromName:    os.Getenv("FROM_NAME"),
 		FromAddress: os.Getenv("FROM_ADDRESS"),
 	}
-
-	return m
 }

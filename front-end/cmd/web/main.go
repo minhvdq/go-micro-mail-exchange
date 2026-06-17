@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-//go:embed templates
+//go:embed templates static
 var templateFS embed.FS
 
 type templateData struct {
@@ -32,8 +32,25 @@ func main() {
 		TenantSvcURL: tenantURL,
 	}
 
+	http.Handle("/static/", http.FileServer(http.FS(templateFS)))
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		render(w, "main.page.gohtml", data)
+	})
+
+	http.HandleFunc("/landing", func(w http.ResponseWriter, r *http.Request) {
+		tmpl, err := template.ParseFS(templateFS, "templates/landing.page.gohtml")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if err := tmpl.ExecuteTemplate(w, "landing", nil); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	})
+
+	http.HandleFunc("/privacy", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/landing#privacy", http.StatusTemporaryRedirect)
 	})
 
 	fmt.Println("Starting front end service on port 80")

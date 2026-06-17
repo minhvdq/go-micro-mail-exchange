@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"tenant/data"
 )
@@ -121,9 +122,92 @@ func (m *mockStore) CreateReleaseRequest(_ context.Context, quarantineID, tenant
 func (m *mockStore) ListReleaseRequests(_ context.Context, tenantID, status string) ([]data.ReleaseRequest, error) {
 	return []data.ReleaseRequest{}, m.err
 }
-func (m *mockStore) ActionReleaseRequest(_ context.Context, requestID, tenantID, reviewerID, action string) error {
+func (m *mockStore) ActionReleaseRequest(_ context.Context, requestID, tenantID, reviewerID, action string) (string, error) {
+	return "", m.err
+}
+func (m *mockStore) GetOAuthTokenByGmailAddress(_ context.Context, gmailAddress, provider string) (*data.OAuthToken, error) {
+	return nil, m.err
+}
+func (m *mockStore) GetQuarantineGmailInfo(_ context.Context, quarantineID, tenantID string) (string, string, error) {
+	return "", "", m.err
+}
+
+func (m *mockStore) UpsertOAuthToken(_ context.Context, userID, tenantID, provider, accessToken, refreshToken, gmailAddress string, expiry time.Time) error {
 	return m.err
 }
+func (m *mockStore) GetOAuthToken(_ context.Context, userID, provider string) (*data.OAuthToken, error) {
+	return nil, m.err
+}
+func (m *mockStore) DeleteOAuthToken(_ context.Context, userID, provider string) error {
+	return m.err
+}
+func (m *mockStore) UpdateLastScanned(_ context.Context, userID, provider string) error {
+	return m.err
+}
+func (m *mockStore) IsGmailMessageQuarantined(_ context.Context, tenantID, gmailMessageID string) bool {
+	return false
+}
+func (m *mockStore) InsertQuarantineFromGmail(_ context.Context, tenantID, emailFrom, emailTo, subject, body string, violations []string, reasoning, priority, gmailMessageID string) error {
+	return m.err
+}
+func (m *mockStore) ListConnectedGmailUsers(_ context.Context) ([]data.OAuthToken, error) {
+	return []data.OAuthToken{}, m.err
+}
+func (m *mockStore) DeleteUser(_ context.Context, userID string) error { return m.err }
+func (m *mockStore) CheckAndIncrementScan(_ context.Context, tenantID string) (bool, string, int, int, error) {
+	return true, "free", 1, 100, m.err
+}
+func (m *mockStore) CheckAndIncrementMailbox(_ context.Context, tenantID string) (bool, string, error) {
+	return true, "free", m.err
+}
+func (m *mockStore) DecrementMailboxCount(_ context.Context, tenantID string) error { return m.err }
+func (m *mockStore) CreateInviteToken(_ context.Context, tenantID, inviterID, email string) (string, error) {
+	return "test-invite-token", m.err
+}
+func (m *mockStore) GetInviteByToken(_ context.Context, rawToken string) (*data.InviteToken, error) {
+	return nil, m.err
+}
+func (m *mockStore) ConsumeInviteToken(_ context.Context, rawToken string) error { return m.err }
+func (m *mockStore) AutoVerifyUser(_ context.Context, userID string) error        { return m.err }
+func (m *mockStore) ListPendingInvites(_ context.Context, tenantID string) ([]data.PendingInvite, error) {
+	return []data.PendingInvite{}, m.err
+}
+func (m *mockStore) CancelInviteByEmail(_ context.Context, tenantID, email string) error {
+	return m.err
+}
+func (m *mockStore) GetTenantByID(_ context.Context, id string) (*data.Tenant, error) {
+	return m.tenant, m.err
+}
+func (m *mockStore) UpdateTenantStripe(_ context.Context, tenantID, customerID, subID, plan string) error {
+	return m.err
+}
+func (m *mockStore) UpdateTenantStripeByCustomer(_ context.Context, customerID, subID, plan string) error {
+	return m.err
+}
+func (m *mockStore) SyncPlanSettings(_ context.Context, customerID, plan string) error { return m.err }
+func (m *mockStore) CreateVerificationToken(_ context.Context, userID string) (string, error) {
+	return "test-token", m.err
+}
+func (m *mockStore) VerifyEmail(_ context.Context, token string) error {
+	return m.err
+}
+func (m *mockStore) CountOrgMembers(_ context.Context, tenantID string) (int, error) {
+	return 0, m.err
+}
+func (m *mockStore) GetUserOrgInfo(_ context.Context, userID string) (string, string, string, error) {
+	return "", "", "free", m.err
+}
+func (m *mockStore) DeleteTenant(_ context.Context, tenantID string) error { return m.err }
+func (m *mockStore) RemoveUserFromOrg(_ context.Context, userID, tenantID string) error {
+	return m.err
+}
+func (m *mockStore) EnforceTeamLimit(_ context.Context, tenantID string, maxMembers int) (int, error) {
+	return 0, m.err
+}
+func (m *mockStore) FindOrCreateSSOUser(_ context.Context, provider, providerUserID, email, firstName, lastName string) (*data.User, *data.Tenant, string, error) {
+	return nil, m.tenant, "owner", m.err
+}
+func (m *mockStore) StartTrial(_ context.Context, tenantID string) error { return m.err }
 
 // --- mock Embedder ---
 

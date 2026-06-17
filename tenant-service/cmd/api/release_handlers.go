@@ -67,7 +67,8 @@ func (app *Config) ActionReleaseRequest(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if err := app.Store.ActionReleaseRequest(r.Context(), requestID, tenantID, reviewerID, body.Action); err != nil {
+	quarantineID, err := app.Store.ActionReleaseRequest(r.Context(), requestID, tenantID, reviewerID, body.Action)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			app.errorJSON(w, errors.New("request not found or already actioned"), http.StatusNotFound)
 		} else {
@@ -75,6 +76,14 @@ func (app *Config) ActionReleaseRequest(w http.ResponseWriter, r *http.Request) 
 		}
 		return
 	}
+
+	if body.Action == "approved" && quarantineID != "" {
+		_ = app.Store.UpdateQuarantineStatus(r.Context(), quarantineID, tenantID, "released")
+		if gmailMsgID, emailTo, err := app.Store.GetQuarantineGmailInfo(r.Context(), quarantineID, tenantID); err == nil {
+			go app.restoreGmailInbox(gmailMsgID, emailTo)
+		}
+	}
+
 	app.writeJSON(w, http.StatusOK, jsonResponse{Message: "request " + body.Action})
 }
 

@@ -198,9 +198,18 @@ func (m *Models) RunRetention(ctx context.Context) (int64, error) {
 			DELETE FROM ` + table + `
 			WHERE tenant_id IS NOT NULL
 			  AND created_at < NOW() - (
-			        COALESCE(
-			            (SELECT retention_days FROM tenant_settings WHERE tenant_id = ` + table + `.tenant_id),
-			            90
+			        LEAST(
+			            COALESCE(
+			                (SELECT retention_days FROM tenant_settings WHERE tenant_id = ` + table + `.tenant_id),
+			                90
+			            ),
+			            CASE (SELECT plan FROM tenants WHERE id = ` + table + `.tenant_id)
+			                WHEN 'free'     THEN 30
+			                WHEN 'starter'  THEN 90
+			                WHEN 'pro'      THEN 90
+			                WHEN 'business' THEN 90
+			                ELSE 30
+			            END
 			        ) * INTERVAL '1 day'
 			      )
 		`

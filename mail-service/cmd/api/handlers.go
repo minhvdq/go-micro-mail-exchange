@@ -29,17 +29,16 @@ func (app *Config) SendMail(w http.ResponseWriter, r *http.Request) {
 		Data:    requestPayload.Message,
 	}
 
-	err = app.Mailer.SendSMTPMessage(msg)
+	err = app.Mailer.SendMessage(msg)
 	if err != nil {
-		log.Println("error", err)
+		log.Printf("mail error to=%s subject=%q: %v", requestPayload.To, requestPayload.Subject, err)
 		app.errorJSON(w, err)
 		return
 	}
 
-	payload := jsonResponse{
+	log.Printf("mail sent to=%s subject=%q", requestPayload.To, requestPayload.Subject)
+	app.writeJSON(w, http.StatusAccepted, jsonResponse{
 		Error:   false,
-		Message: "Sent to" + requestPayload.To,
-	}
-
-	app.writeJSON(w, http.StatusAccepted, payload)
+		Message: "Sent to " + requestPayload.To,
+	})
 }

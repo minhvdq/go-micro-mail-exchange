@@ -219,6 +219,10 @@ func (app *Config) ReviewQuarantine(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	if body.Action == "release" && entry.GmailMessageID != "" {
+		go app.restoreGmailInbox(entry.GmailMessageID, entry.EmailTo)
+	}
+
 	app.writeJSON(w, http.StatusOK, jsonResponse{
 		Error:   false,
 		Message: fmt.Sprintf("email %sd", body.Action),
@@ -240,6 +244,16 @@ func (app *Config) CheckEmail(w http.ResponseWriter, r *http.Request) {
 	}
 	if body.From == "" || body.To == "" || body.Message == "" {
 		app.errorJSON(w, fmt.Errorf("from, to, and message are required"))
+		return
+	}
+
+	allowed, plan, used, limit, err := app.Store.CheckAndIncrementScan(r.Context(), tenantID)
+	if err != nil {
+		app.errorJSON(w, fmt.Errorf("plan check: %w", err), http.StatusInternalServerError)
+		return
+	}
+	if !allowed {
+		app.errorJSON(w, fmt.Errorf("scan limit reached (%d/%d) on %s plan — upgrade to continue", used, limit, plan), http.StatusPaymentRequired)
 		return
 	}
 

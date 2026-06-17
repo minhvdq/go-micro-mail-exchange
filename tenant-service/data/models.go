@@ -19,9 +19,15 @@ import (
 const dbTimeout = 3 * time.Second
 
 type Tenant struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
+	ID               string     `json:"id"`
+	Name             string     `json:"name"`
+	Plan             string     `json:"plan"`
+	StripeCustomerID string     `json:"-"`
+	StripeSubID      string     `json:"-"`
+	ScansThisPeriod  int        `json:"scans_this_period"`
+	PeriodResetAt    time.Time  `json:"period_reset_at"`
+	TrialEndsAt      *time.Time `json:"trial_ends_at,omitempty"`
+	CreatedAt        time.Time  `json:"created_at"`
 }
 
 type Models struct {
@@ -173,16 +179,17 @@ func (m *Models) InsertPolicyEmbedding(ctx context.Context, tenantID, filename s
 }
 
 type QuarantineEntry struct {
-	ID         string    `json:"id"`
-	EmailFrom  string    `json:"email_from"`
-	EmailTo    string    `json:"email_to"`
-	Subject    string    `json:"subject"`
-	Body       string    `json:"body"`
-	Violations []string  `json:"violations"`
-	Reasoning  string    `json:"reasoning"`
-	Status     string    `json:"status"`
-	Priority   string    `json:"priority"`
-	CreatedAt  time.Time `json:"created_at"`
+	ID             string    `json:"id"`
+	EmailFrom      string    `json:"email_from"`
+	EmailTo        string    `json:"email_to"`
+	Subject        string    `json:"subject"`
+	Body           string    `json:"body"`
+	Violations     []string  `json:"violations"`
+	Reasoning      string    `json:"reasoning"`
+	Status         string    `json:"status"`
+	Priority       string    `json:"priority"`
+	GmailMessageID string    `json:"gmail_message_id,omitempty"`
+	CreatedAt      time.Time `json:"created_at"`
 }
 
 func (m *Models) QueryQuarantine(ctx context.Context, tenantID, status string) ([]QuarantineEntry, error) {
@@ -227,7 +234,8 @@ func (m *Models) GetQuarantineByID(ctx context.Context, id, tenantID string) (*Q
 	query := `
 		SELECT id, email_from, email_to, subject, body,
 		       COALESCE((SELECT array_agg(v) FROM jsonb_array_elements_text(violations) v), '{}'),
-		       COALESCE(reasoning, ''), status, COALESCE(priority, 'medium'), created_at
+		       COALESCE(reasoning, ''), status, COALESCE(priority, 'medium'), created_at,
+		       COALESCE(gmail_message_id, '')
 		FROM quarantine
 		WHERE id = $1 AND tenant_id = $2
 	`
@@ -235,6 +243,7 @@ func (m *Models) GetQuarantineByID(ctx context.Context, id, tenantID string) (*Q
 	err := m.db.QueryRowContext(ctx, query, id, tenantID).Scan(
 		&e.ID, &e.EmailFrom, &e.EmailTo, &e.Subject, &e.Body,
 		pq.Array(&e.Violations), &e.Reasoning, &e.Status, &e.Priority, &e.CreatedAt,
+		&e.GmailMessageID,
 	)
 	if err != nil {
 		return nil, err
@@ -399,6 +408,16 @@ func (m *Models) QueryUserQuarantine(ctx context.Context, tenantID, emailTo, sta
 		entries = []QuarantineEntry{}
 	}
 	return entries, rows.Err()
+}
+
+func (m *Models) GetQuarantineGmailInfo(ctx context.Context, quarantineID, tenantID string) (gmailMessageID, emailTo string, err error) {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	err = m.db.QueryRowContext(ctx,
+		`SELECT COALESCE(gmail_message_id, ''), email_to FROM quarantine WHERE id = $1 AND tenant_id = $2`,
+		quarantineID, tenantID,
+	).Scan(&gmailMessageID, &emailTo)
+	return
 }
 
 func (m *Models) UpdateQuarantineStatus(ctx context.Context, id, tenantID, status string) error {

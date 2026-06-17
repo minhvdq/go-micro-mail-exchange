@@ -38,14 +38,9 @@ services:
       mode: replicated
       replicas: 1
     environment:
-      MAIL_DOMAIN: localhost
-      MAIL_HOST: mailhog
-      MAIL_PORT: 1025
-      MAIL_USERNAME: ""
-      MAIL_PASSWORD: ""
-      MAIL_ENCRYPTION: none
-      FROM_NAME: "GoMailGuard"
-      FROM_ADDRESS: "noreply@gomailguard.com"
+      BREVO_API_KEY: "${BREVO_API_KEY}"
+      FROM_NAME: "Quarantio"
+      FROM_ADDRESS: "quarantio8@gmail.com"
 
   tenant-service:
     build:
@@ -64,6 +59,14 @@ services:
       COMPLIANCE_SVC_URL: "http://ai-compliance-service:8083"
       ENCRYPTION_KEY: "${ENCRYPTION_KEY}"
       JWT_SECRET: "${JWT_SECRET}"
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
+      GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET}"
+      GOOGLE_REDIRECT_URI: "${GOOGLE_REDIRECT_URI}"
+      STRIPE_SECRET_KEY: "${STRIPE_SECRET_KEY}"
+      STRIPE_WEBHOOK_SECRET: "${STRIPE_WEBHOOK_SECRET}"
+      STRIPE_PRICE_ID: "${STRIPE_PRICE_ID}"
+      MICROSOFT_CLIENT_ID: "${MICROSOFT_CLIENT_ID}"
+      MICROSOFT_CLIENT_SECRET: "${MICROSOFT_CLIENT_SECRET}"
 
   ai-compliance-service:
     build:

@@ -11,18 +11,42 @@ import (
 func (app *Config) routes() http.Handler {
 	mux := chi.NewRouter()
 
+	allowedOrigin := app.FrontendURL
+	if allowedOrigin == "" {
+		allowedOrigin = "http://localhost"
+	}
 	mux.Use(cors.Handler(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedMethods: []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
-		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type"},
+		AllowedOrigins:   []string{allowedOrigin},
+		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
+		AllowCredentials: false,
 	}))
 	mux.Use(middleware.Logger)
 
 	// Public auth endpoints
-	mux.Post("/auth/register", app.Register)
-	mux.Post("/auth/login", app.Login)
-	mux.Post("/auth/refresh", app.Refresh)
+	mux.With(authRateLimit).Post("/auth/register", app.Register)
+	mux.With(authRateLimit).Post("/auth/login", app.Login)
+	mux.With(authRateLimit).Post("/auth/refresh", app.Refresh)
 	mux.Post("/auth/logout", app.Logout)
+	mux.Get("/auth/verify", app.VerifyEmailHandler)
+	mux.With(authRateLimit).Post("/auth/resend-verification", app.ResendVerification)
+	mux.Post("/auth/setup-org", app.SetupOrg)
+	mux.Get("/auth/invite/info", app.GetInviteInfo)
+	mux.Post("/auth/invite/accept", app.AcceptInvite)
+	mux.Get("/auth/invite/decline", app.DeclineInvite)
+
+	// SSO login (Google + Microsoft) — browser-driven, no JWT required
+	mux.Get("/auth/google/login", app.GoogleLoginStart)
+	mux.Get("/auth/google/login/callback", app.GoogleLoginCallback)
+	mux.Get("/auth/microsoft/login", app.MicrosoftLoginStart)
+	mux.Get("/auth/microsoft/login/callback", app.MicrosoftLoginCallback)
+
+	// Google OAuth (browser-driven flow — no JWT header possible mid-redirect)
+	mux.Get("/auth/google/connect", app.GoogleConnect)
+	mux.Get("/auth/google/callback", app.GoogleCallback)
+
+	// Stripe webhook — public, signature-verified
+	mux.Post("/v1/billing/webhook", app.BillingWebhook)
 
 	// Legacy: org registration via API (creates tenant + API key)
 	mux.Post("/v1/organizations", app.RegisterOrganization)
@@ -55,10 +79,25 @@ func (app *Config) routes() http.Handler {
 		r.With(RequireRole("owner")).Patch("/v1/members/{id}/role", app.UpdateMemberRole)
 		r.With(RequireRole("owner")).Delete("/v1/members/{id}", app.RemoveMember)
 
+		// Invite management
+		r.With(RequireRole("owner")).Get("/v1/invites", app.GetPendingInvites)
+		r.With(RequireRole("owner")).Delete("/v1/invites", app.CancelInvite)
+		r.Post("/v1/invites/accept", app.AcceptInviteJWT)
+
 		// Any user can submit a HIGH release request; only owner can action it
 		r.Post("/v1/quarantine/{id}/release-request", app.SubmitReleaseRequest)
 		r.With(RequireRole("owner")).Get("/v1/release-requests", app.ListReleaseRequests)
 		r.With(RequireRole("owner")).Post("/v1/release-requests/{id}/action", app.ActionReleaseRequest)
+
+		// Gmail OAuth integration
+		r.Get("/v1/gmail/status", app.GmailStatus)
+		r.Delete("/v1/gmail/disconnect", app.GmailDisconnect)
+		r.Post("/v1/gmail/scan", app.GmailScan)
+
+		// Billing
+		r.Get("/v1/billing/status", app.BillingStatus)
+		r.With(RequireRole("owner")).Post("/v1/billing/checkout", app.BillingCheckout)
+		r.With(RequireRole("owner")).Post("/v1/billing/start-trial", app.StartTrial)
 	})
 
 	return mux
