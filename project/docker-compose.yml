@@ -78,6 +78,11 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_started
     environment:
       DSN: "host=postgres port=5432 user=postgres password=password dbname=users sslmode=disable timezone=UTC connect_timeout=5"
       MISTRAL_API_KEY: "${MISTRAL_API_KEY}"
@@ -120,8 +125,15 @@ services:
     image: 'rabbitmq:3.13-alpine'
     ports:
       - "5672:5672"
+    restart: always
     deploy:
       mode: replicated
       replicas: 1
     volumes:
       - ./db-data/rabbitmq/:/var/lib/rabbitmq/
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
