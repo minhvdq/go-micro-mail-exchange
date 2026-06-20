@@ -1,0 +1,266 @@
+[
+  {
+    "id": "H01",
+    "label": "HIGH",
+    "from": "ceo-impersonator@gmail-corp.com",
+    "to": "finance@acme.com",
+    "subject": "Urgent wire transfer needed \u2014 confidential",
+    "message": "Hi Sarah, I'm in a board meeting and need you to process an urgent wire transfer of $87,500 to our new vendor. This is time-sensitive and needs to happen in the next 2 hours. Account: 4892-XXXX, Routing: 021000089. Don't discuss this with anyone else \u2014 it's part of a confidential acquisition deal. I'll explain everything later. Please confirm when done. Thanks, David Chen, CEO"
+  },
+  {
+    "id": "H02",
+    "label": "HIGH",
+    "from": "it-support@micros0ft-helpdesk.com",
+    "to": "employee@acme.com",
+    "subject": "Your Microsoft 365 account will be suspended in 24 hours",
+    "message": "URGENT: Your Microsoft 365 account has been flagged for suspicious activity. To avoid suspension, you must verify your credentials immediately at http://microsoft-verify-account.xyz/login. Enter your username and password to confirm your identity. If you do not act within 24 hours your account will be permanently disabled. Microsoft Security Team."
+  },
+  {
+    "id": "H03",
+    "label": "HIGH",
+    "from": "john.smith@acme.com",
+    "to": "personal.backup99@gmail.com",
+    "subject": "Customer export \u2014 do not share",
+    "message": "Hey, sending this to my personal Gmail so I have a backup copy. Attached is the full customer database export \u2014 47,000 records including names, emails, phone numbers, billing addresses, and credit card last 4 digits. Let me know if the file didn't come through. \u2014 John"
+  },
+  {
+    "id": "H04",
+    "label": "HIGH",
+    "from": "finance-update@paypa1-secure.com",
+    "to": "accounts@acme.com",
+    "subject": "PayPal: Unusual activity \u2014 verify now",
+    "message": "We have detected unusual login activity on your PayPal business account. Your account has been temporarily limited. To restore full access, please confirm your identity by providing your PayPal email, password, and the 6-digit verification code sent to your phone. Failure to verify within 48 hours will result in permanent account suspension. Click here to verify: http://paypal-accounts-secure.net/verify"
+  },
+  {
+    "id": "H05",
+    "label": "HIGH",
+    "from": "trader.info@protonmail.com",
+    "to": "michael.jones@acme.com",
+    "subject": "Buy ACME stock before Thursday \u2014 insider info",
+    "message": "Mike, heard from my contact inside that ACME is announcing the Nexus acquisition on Thursday morning before market open. Stock is going to jump at least 30%. Load up on calls before Wednesday close. This is straight from the CFO's assistant. Don't put this in writing, delete this after reading. \u2014 R"
+  },
+  {
+    "id": "H06",
+    "label": "HIGH",
+    "from": "vendor-payments@acme-billing.net",
+    "to": "ap@acme.com",
+    "subject": "Updated banking details for invoice #4821",
+    "message": "Hi Accounts Payable team, please be advised that our company has recently changed banks. Going forward, please redirect all payments previously sent to Chase account ending 4821 to our new account: Bank of America, Account 8834729100, Routing 026009593. This applies to all outstanding and future invoices. Please update your records immediately. Thank you, Apex Supplies Ltd."
+  },
+  {
+    "id": "H07",
+    "label": "HIGH",
+    "from": "angry.ex-employee@gmail.com",
+    "to": "ceo@acme.com",
+    "subject": "You will regret this",
+    "message": "I know where you live. After what you people did to me, firing me right before my vesting cliff, I am going to make sure everyone knows what goes on in that company. I have screenshots of everything \u2014 the fraud, the fake numbers you reported to investors. Either you reinstate me with full back pay by Friday or I am going to the SEC and the press. This is your only warning."
+  },
+  {
+    "id": "H08",
+    "label": "HIGH",
+    "from": "devops@acme.com",
+    "to": "contractor-onboarding@freelancer.io",
+    "subject": "AWS credentials for new contractor",
+    "message": "Hi Carlos, here are the AWS credentials you'll need to access the production environment. Access Key ID: AKIAIOSFODNN7EXAMPLE, Secret Access Key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY. The production RDS password is: Pr0d-DB-Secure#2024. Please don't store these anywhere insecure. Let me know if you have any issues connecting. \u2014 DevOps Team"
+  },
+  {
+    "id": "H09",
+    "label": "HIGH",
+    "from": "recruiter@talent-global.com",
+    "to": "engineer@acme.com",
+    "subject": "Exciting opportunity \u2014 bring your current projects",
+    "message": "Hi Alex, we have an exciting senior engineering role at a well-funded stealth startup that would love to have someone with your background. The founders are particularly interested in candidates who can bring relevant architecture experience and any proprietary systems documentation that would help accelerate their roadmap. Compensation starts at $400K total. Interested? We can keep this completely confidential."
+  },
+  {
+    "id": "H10",
+    "label": "HIGH",
+    "from": "hr-admin@acme.com",
+    "to": "competitor-cto@techrivalonline.com",
+    "subject": "Re: talent acquisition partnership",
+    "message": "As discussed, I am forwarding you the full org chart with salary bands, performance ratings, and flight risk scores for our engineering team. The spreadsheet has 340 employees with compensation details. Happy to discuss a reciprocal arrangement. This stays between us."
+  },
+  {
+    "id": "M01",
+    "label": "MEDIUM",
+    "from": "sales.rep@acme.com",
+    "to": "prospect@externalco.com",
+    "subject": "Re: pricing discussion",
+    "message": "Hi Mark, as a heads up between us \u2014 our list price is $50K but we've been authorized to go as low as $28K for enterprise deals this quarter to hit our number. Our cost of goods is around $8K so there's room. Don't share this with your procurement team yet, let's agree in principle first. I'll send a formal quote that shows $50K and we'll handle the discount separately. Looking forward to closing this one."
+  },
+  {
+    "id": "M02",
+    "label": "MEDIUM",
+    "from": "cfo@acme.com",
+    "to": "investor.friend@personalmail.com",
+    "subject": "Q3 numbers \u2014 heads up before Thursday",
+    "message": "Hey Brian, just a heads up before we announce Thursday \u2014 Q3 came in at $14.2M revenue, up 34% YoY. EBITDA margin hit 22% for the first time. Guidance for Q4 is $16-17M. Market is going to love this. Wanted to give you time to position accordingly before the call. Keep this between us obviously."
+  },
+  {
+    "id": "M03",
+    "label": "MEDIUM",
+    "from": "operations@acme.com",
+    "to": "freelance.consultant@personal.com",
+    "subject": "Strategy deck \u2014 please review",
+    "message": "Hi Tom, attaching our 2025 strategic plan for your review. It includes our M&A pipeline, three acquisition targets we're evaluating, product roadmap through 2026, and confidential competitive analysis. Please review sections 3 and 4 and give us your thoughts. Note that none of this has been approved for external sharing \u2014 I'm sending this informally for your perspective."
+  },
+  {
+    "id": "M04",
+    "label": "MEDIUM",
+    "from": "employee@acme.com",
+    "to": "friend@gmail.com",
+    "subject": "Company drama \u2014 you won't believe this",
+    "message": "So apparently our VP of Sales Marcus is getting fired next week. HR has been investigating him for the past month for falsifying pipeline numbers \u2014 apparently he inflated the Q2 forecast by $4M. Also, we're apparently in talks to be acquired by DataCorp, which is why we've been pushing so hard on revenue. Total chaos internally. The CEO hasn't said anything publicly yet."
+  },
+  {
+    "id": "M05",
+    "label": "MEDIUM",
+    "from": "account.manager@acme.com",
+    "to": "competitor@rivaltech.com",
+    "subject": "Our mutual client \u2014 TechStartup Inc",
+    "message": "Hey Jamie, I know we're technically competing for the TechStartup renewal but I wanted to give you a heads up. We've already agreed in principle on a $200K deal with them and they're signing next week. You probably shouldn't waste resources pursuing them. Also, they told me your pricing came in 20% higher than ours \u2014 might want to sharpen your pencil for future deals. Thought it'd be fair to tell you."
+  },
+  {
+    "id": "M06",
+    "label": "MEDIUM",
+    "from": "manager@acme.com",
+    "to": "recruiter@headhunters.com",
+    "subject": "Reference for Jane Doe \u2014 confidential",
+    "message": "Hi, I understand Jane listed me as a reference. Off the record \u2014 I'd be cautious about her. She had a PIP for the last 6 months, her performance rating was a 2 out of 5, and she had conflicts with three team members that led to one person leaving. Her base salary here was $95,000. Please keep this completely confidential and do not share it with Jane."
+  },
+  {
+    "id": "M07",
+    "label": "HIGH",
+    "from": "biz.dev@acme.com",
+    "to": "partner@externalfirm.com",
+    "subject": "Customer list for co-marketing",
+    "message": "Hi Rachel, as discussed for our co-marketing campaign, I'm sharing our customer contact list \u2014 8,200 records with names, company, email, phone, and deal size. We don't technically have explicit consent for third-party sharing in our privacy policy but the campaign should be valuable enough that customers won't mind. Let's move quickly before legal notices."
+  },
+  {
+    "id": "M08",
+    "label": "MEDIUM",
+    "from": "employee@acme.com",
+    "to": "colleague@acme.com",
+    "subject": "What does everyone make here?",
+    "message": "Hey, I've been talking to a few people and want to start a salary transparency spreadsheet so we know if we're being paid fairly. Can you share what your base, bonus, and equity grant look like? I'll collect everyone's info and share the results. Already have numbers from 12 people. Management definitely doesn't want us comparing notes but I think we have a right to know."
+  },
+  {
+    "id": "L01",
+    "label": "MEDIUM",
+    "from": "sales@acme.com",
+    "to": "prospect@company.com",
+    "subject": "Following up on our conversation",
+    "message": "Hi Tom, just following up from our call last week. Between us, we've got a really aggressive Q4 target and my manager has told me we can be flexible on price if we get the paperwork signed this month. I probably shouldn't say that but I want to make sure we get this done. Looking forward to your decision."
+  },
+  {
+    "id": "L02",
+    "label": "MEDIUM",
+    "from": "developer@acme.com",
+    "to": "consultant@freelance.io",
+    "subject": "Question about the API integration",
+    "message": "Hey, quick question on the Nexus project integration \u2014 the internal API endpoint is at https://internal-api.acme.com:8443 and requires the service account token I mentioned. I know we haven't sent the official access request through IT yet but wanted to unblock you. I'll get the formal approval sorted next week."
+  },
+  {
+    "id": "L03",
+    "label": "MEDIUM",
+    "from": "customer.success@acme.com",
+    "to": "client@bigcorp.com",
+    "subject": "Re: your renewal",
+    "message": "Hi Laura, honestly our product has had some growing pains this year \u2014 the Q2 outages were rough and I totally understand your frustration. Between us, we're planning to completely rebuild the infrastructure layer in Q1. It's not officially announced yet so please don't share that publicly, but I wanted to be transparent with you given our relationship."
+  },
+  {
+    "id": "L04",
+    "label": "LOW",
+    "from": "employee@acme.com",
+    "to": "friend@otherjob.com",
+    "subject": "Using company laptop for side project",
+    "message": "Hey, been using my work MacBook to build out that SaaS idea we talked about. Got a lot further than expected \u2014 have about 400 lines of code done during lunch breaks. Company policy probably says I shouldn't but it's totally unrelated to what we do. Let me show you what I've built when we meet up Friday."
+  },
+  {
+    "id": "L05",
+    "label": "MEDIUM",
+    "from": "marketing@acme.com",
+    "to": "agency@designpartner.com",
+    "subject": "Campaign assets",
+    "message": "Hi, attaching the brand assets for the campaign. Also sharing our competitor analysis doc \u2014 I know this probably shouldn't leave the building but you'll need context to position our messaging correctly. Just keep it internal to your team. The document has NDA language on page 1 but we haven't actually signed anything yet."
+  },
+  {
+    "id": "C01",
+    "label": "CLEAN",
+    "from": "manager@acme.com",
+    "to": "team@acme.com",
+    "subject": "Team standup \u2014 Thursday 10am",
+    "message": "Hi everyone, quick reminder that our weekly standup is Thursday at 10am in conference room B. Please come prepared with your status update: what you completed this week, what you're working on next, and any blockers. If you can't make it, please send your update to the group by 9:30am. See you all Thursday. \u2014 Lisa"
+  },
+  {
+    "id": "C02",
+    "label": "CLEAN",
+    "from": "sales@acme.com",
+    "to": "prospect@newclient.com",
+    "subject": "Proposal for DataGuard Enterprise \u2014 ACME Solutions",
+    "message": "Dear Mr. Patterson, thank you for taking the time to meet with us last Tuesday. As discussed, please find attached our formal proposal for the DataGuard Enterprise implementation. The proposal includes a detailed scope of work, implementation timeline (16 weeks), pricing at $125,000 annually, and our standard SLA commitments. We believe this solution will significantly reduce your compliance risk. Please review at your convenience and let me know if you have any questions. Best regards, Michael Torres, Enterprise Sales"
+  },
+  {
+    "id": "C03",
+    "label": "CLEAN",
+    "from": "support@acme.com",
+    "to": "customer@clientco.com",
+    "subject": "Re: Issue with dashboard loading \u2014 Ticket #48291",
+    "message": "Hi Jessica, thank you for contacting our support team. I've reviewed your ticket and reproduced the issue with the dashboard loading. Our engineering team has identified this as a caching bug introduced in last week's release. We have a fix ready and it will be deployed in tonight's maintenance window (11pm-1am EST). The dashboard will be fully functional by tomorrow morning. I'll send you a follow-up once the deployment is complete. Apologies for the inconvenience. \u2014 ACME Support"
+  },
+  {
+    "id": "C04",
+    "label": "CLEAN",
+    "from": "hr@acme.com",
+    "to": "new.hire@acme.com",
+    "subject": "Welcome to ACME! Your first day details",
+    "message": "Hi Emily, we're thrilled to welcome you to the ACME team! Your start date is Monday, January 8th. Please arrive at our main office at 9 Main Street by 9:00am and ask for Jennifer at reception. Your first day will include orientation, IT setup, and team introductions. Please bring a government-issued photo ID and your signed offer letter. Your manager, David Park, will meet you at 10am for a 1:1 to go over your first 30 days. Looking forward to having you join us! \u2014 HR Team"
+  },
+  {
+    "id": "C05",
+    "label": "CLEAN",
+    "from": "finance@vendor.com",
+    "to": "ap@acme.com",
+    "subject": "Invoice #2024-0892 \u2014 Cloud Services October",
+    "message": "Dear Accounts Payable, please find attached invoice #2024-0892 for cloud infrastructure services rendered in October 2024. Invoice total: $12,450.00. Payment terms: Net 30. Our banking details remain unchanged from your records. Please reference PO#ACM-7721 when processing. If you have any questions about this invoice, please contact billing@vendor.com. Thank you for your continued business. \u2014 Vendor Finance Team"
+  },
+  {
+    "id": "C06",
+    "label": "CLEAN",
+    "from": "product@acme.com",
+    "to": "all-hands@acme.com",
+    "subject": "New feature launch: Advanced Reporting Dashboard",
+    "message": "Team, excited to announce that the Advanced Reporting Dashboard is now live in production! This has been months in the making and a huge effort from engineering, design, and product. Key features: real-time analytics, custom date ranges, CSV export, and 12 new metric visualizations. Full documentation is available in the internal wiki. Customer-facing release notes have been published to our blog. Special thanks to the dashboard squad for shipping this on time. \ud83c\udf89 \u2014 Product Team"
+  },
+  {
+    "id": "C07",
+    "label": "CLEAN",
+    "from": "legal@acme.com",
+    "to": "contracts@acme.com",
+    "subject": "NDA executed \u2014 Brightside Partners",
+    "message": "Hi team, just confirming that the mutual NDA with Brightside Partners has been fully executed. Signed copies are in the contract management system under vendor/brightside-partners. The agreement covers a 3-year term from today's date. You may now share confidential materials with their team in the context of the partnership evaluation. Please ensure any materials shared are marked Confidential per our standard policy. \u2014 Legal"
+  },
+  {
+    "id": "C08",
+    "label": "CLEAN",
+    "from": "engineering@acme.com",
+    "to": "qa@acme.com",
+    "subject": "Release candidate v2.4.1 ready for testing",
+    "message": "QA team, release candidate v2.4.1 is deployed to the staging environment and ready for your testing pass. This release includes: 3 bug fixes (JIRA tickets ENG-1204, ENG-1218, ENG-1231), performance improvements to the search API (40% faster), and the new webhook retry logic. Test plan is linked in the JIRA epic. Target production deployment is this Friday at 6pm EST pending QA sign-off. Please complete testing by Thursday EOD. \u2014 Engineering"
+  },
+  {
+    "id": "C09",
+    "label": "CLEAN",
+    "from": "ceo@acme.com",
+    "to": "all-hands@acme.com",
+    "subject": "Q3 results \u2014 company all-hands recap",
+    "message": "Team, thank you for joining today's all-hands. As shared publicly in our earnings release, Q3 revenue was $13.8M, up 28% year over year. I'm proud of what we've accomplished together. Our net retention rate hit 118% \u2014 a company record. Looking at Q4, our focus is on enterprise expansion and improving our NPS score from 42 to 50. The full earnings release and investor presentation are posted on our investor relations page. Thank you for everything you do. \u2014 James"
+  },
+  {
+    "id": "C10",
+    "label": "CLEAN",
+    "from": "office@acme.com",
+    "to": "all@acme.com",
+    "subject": "Office closed December 25-26 \u2014 holiday schedule",
+    "message": "Hi everyone, a reminder that the office will be closed on December 25th and 26th in observance of the Christmas holiday. Normal operations resume on December 27th. For urgent matters during the closure, please contact your department head directly. Wishing everyone a wonderful holiday season. The office management team will be sending around the annual holiday party details next week \u2014 stay tuned! \u2014 Office Management"
+  }
+]

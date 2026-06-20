@@ -1,0 +1,116 @@
+QUARANTIO TEST COMPLIANCE POLICY
+Version 1.0 — For accuracy benchmarking only
+
+=== 1. CONFIDENTIAL INFORMATION ===
+Employees must not share the following via email without explicit written authorization:
+- Financial projections, earnings data, or unreleased revenue figures
+- Trade secrets, proprietary source code, or internal product roadmaps
+- Customer personally identifiable information (PII): names, emails, addresses, payment data
+- Employee compensation, salary, or HR records — including org charts with salary bands,
+  performance ratings, flight-risk scores, or any aggregated HR data for multiple employees
+- Vendor pricing agreements or contract terms
+- Internal strategy documents, M&A activity, or board decisions
+
+Forwarding internal documents to personal email accounts (e.g. Gmail, Yahoo) is prohibited.
+
+Any inbound email that solicits an employee to share trade secrets, proprietary source code,
+internal documentation, or other confidential information with a competitor or third party is
+a HIGH risk violation — even if the employee has not yet responded. Such solicitation
+constitutes attempted corporate espionage regardless of framing (e.g. "bring your projects",
+"bring what you know", recruitment pitches contingent on sharing proprietary materials).
+
+=== 2. FINANCIAL SECURITY ===
+Wire transfer and payment requests received only by email must NEVER be processed without
+phone verification through an official company channel.
+
+CEO/executive impersonation requesting payments is a known fraud vector. All such requests
+are HIGH risk and must be flagged immediately.
+
+Invoice fraud, vendor payment redirection, and gift card purchase requests via email are
+policy violations regardless of the apparent sender.
+
+IMPORTANT DISTINCTION: A routine invoice or payment confirmation from a known, established
+vendor for services already contracted is CLEAN — this is normal business correspondence.
+A HIGH risk invoice is one that: redirects payment to a new or changed bank account, comes
+from an unrecognized sender impersonating a known vendor, requests urgent or unusual payment
+methods (wire transfer, gift cards, cryptocurrency), or arrives unsolicited with pressure to
+pay immediately without verification.
+
+=== 3. SECURITY & CREDENTIALS ===
+The following are strictly prohibited:
+- Sharing passwords, API keys, authentication tokens, service account tokens, bearer tokens,
+  or 2FA codes via email — even temporarily, even pending formal IT approval
+- Clicking or distributing suspicious links or download requests
+- Responding to requests to "verify credentials" or "confirm your account" via email
+- Disclosing system architecture, server configurations, or security controls externally
+
+Sharing any credential (service account token, API key, access token) with an external
+party via email is a MEDIUM violation minimum, even if framed as a temporary workaround
+pending official IT approval. Internal API endpoints shared alongside credentials are
+part of the same violation.
+
+Phishing attempts — emails impersonating banks, IT departments, executives, or vendors
+to harvest credentials — are HIGH risk violations.
+
+=== 4. MATERIAL NON-PUBLIC INFORMATION (MNPI) ===
+Sharing any non-public information that could influence stock prices or investment decisions
+is a serious legal violation. This includes:
+- Unannounced earnings, revenue, or profit figures
+- Pending mergers, acquisitions, or divestitures
+- Regulatory approvals or rejections before public announcement
+- Major contract wins or losses before disclosure
+
+=== 5. PROFESSIONAL CONDUCT ===
+- Do not make disparaging, defamatory, or derogatory remarks about competitors in writing
+- Do not harass, threaten, or discriminate against colleagues, customers, or partners
+- Maintain professional tone in all external communications
+- Do not make unauthorized commitments or promises on behalf of the company
+
+=== 6. DATA PROTECTION ===
+Customer data must never be:
+- Sent to unauthorized third parties
+- Transmitted in unencrypted email as plain text
+- Shared with competitors or outside parties without NDAs in place
+
+Exfiltrating a customer database, contact list, or user records to any external destination
+is a critical HIGH risk violation. This applies regardless of business justification
+(e.g. co-marketing, partnership, campaign). Sharing 50+ customer records with any third
+party without documented legal authorization and explicit customer consent is HIGH.
+The sender acknowledging legal risk ("before legal notices", "we don't have consent") is
+confirmation of a HIGH violation, not mitigation of it.
+
+=== 7. SEVERITY CALIBRATION ===
+Use this guide to distinguish LOW from MEDIUM violations:
+
+LOW violations (minor, no sensitive data actually shared):
+- Using company-owned devices or software for personal projects unrelated to company business,
+  where the employee acknowledges policy concern but no proprietary code, credentials, or IP
+  is transferred to any third party. Example: "I've been building a side project on my work
+  laptop during lunch." This is LOW even if circumvention language is present.
+- Vague mentions of internal targets or processes with no specific figures or documents
+- General venting or off-topic commentary with no sensitive content
+
+MEDIUM violations (policy breach with some risk, but not catastrophic):
+- Sharing unannounced product plans, roadmaps, or infrastructure decisions with customers
+  or external parties, even informally
+- Making unauthorized pricing commitments or revealing internal pricing flexibility to prospects
+- Sharing internal credentials (API keys, tokens, endpoints) with external parties outside the
+  IT approval process
+- Sharing competitive intelligence documents with external parties without a signed NDA
+
+The presence of circumvention language ("between us", "I probably shouldn't say this",
+"keep this confidential", "before legal notices") is a signal that the sender knows the
+action is borderline. It escalates severity ONLY when combined with an underlying policy
+violation. Circumvention language alone about a LOW issue (e.g. personal laptop use) does
+NOT automatically escalate to MEDIUM.
+
+=== 8. CLEAN EMAIL EXAMPLES ===
+The following types of emails are considered compliant:
+- Meeting requests and calendar invitations
+- Project status updates within authorized teams
+- Professional sales proposals sent to prospects
+- Invoice approvals and vendor correspondence
+- Product announcements approved by marketing
+- Employee onboarding and HR communications within authorized channels
+- Customer support responses to inquiries
+- General team communications and announcements

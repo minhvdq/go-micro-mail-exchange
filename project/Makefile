@@ -1,4 +1,3 @@
-FRONTEND_BINARY=frontendApp
 BROKER_BINARY=brokerApp
 MAIL_BINARY=mailServiceApp
 TENANT_BINARY=tenantApp
@@ -20,7 +19,7 @@ up:
 	@echo "Docker images started!"
 
 ## up_build: stops docker-compose (if running), builds all projects and starts docker compose
-up_build: build_broker build_mail build_tenant build_compliance build_frontend
+up_build: build_broker build_mail build_tenant build_compliance
 	@echo "Stopping docker images (if running...)"
 	docker compose down
 	@echo "Building (when required) and starting docker images..."
@@ -57,23 +56,19 @@ build_compliance:
 	cd ../ai-compliance-service && env GOOS=linux CGO_ENABLED=0 go build -o ${COMPLIANCE_BINARY} ./cmd/api
 	@echo "Done!"
 
-## build_frontend: builds the frontend binary as a linux executable
+## build_frontend: builds the React frontend for production (output: front-end/dist/)
 build_frontend:
-	@echo "Building frontend binary..."
-	cd ../front-end && env GOOS=linux CGO_ENABLED=0 go build -o ${FRONTEND_BINARY} ./cmd/web
+	@echo "Building frontend..."
+	cd ../front-end && npm ci && npm run build
 	@echo "Done!"
 
-## start: builds and runs the front end locally (dev)
-start: build_front
-	@echo "Starting front end"
-	cd ../front-end && ./${FRONTEND_BINARY} &
+## start: starts the Vite dev server on port 3000
+start:
+	@echo "Starting frontend dev server..."
+	cd ../front-end && npm run dev &
 
-## stop: stop the front end
+## stop: stop the Vite dev server
 stop:
-	@echo "Stopping front end..."
-	@-pkill -SIGTERM -f "./${FRONTEND_BINARY}"
-	@echo "Stopped front end!"
-
-restart:
-	make stop
-	make start
+	@echo "Stopping frontend dev server..."
+	@-pkill -f "vite"
+	@echo "Done!"
