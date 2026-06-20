@@ -12,9 +12,6 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-    environment:
-      BROKER_URL: "http://localhost:8080"
-      TENANT_SVC_URL: "http://localhost:8082"
 
   broker-service:
     build:
@@ -64,9 +61,14 @@ services:
       GOOGLE_REDIRECT_URI: "${GOOGLE_REDIRECT_URI}"
       STRIPE_SECRET_KEY: "${STRIPE_SECRET_KEY}"
       STRIPE_WEBHOOK_SECRET: "${STRIPE_WEBHOOK_SECRET}"
-      STRIPE_PRICE_ID: "${STRIPE_PRICE_ID}"
+      STRIPE_PRICE_STARTER: "${STRIPE_PRICE_STARTER}"
+      STRIPE_PRICE_PRO: "${STRIPE_PRICE_PRO}"
+      STRIPE_PRICE_BUSINESS: "${STRIPE_PRICE_BUSINESS}"
+      FRONTEND_URL: "${FRONTEND_URL:-http://localhost}"
       MICROSOFT_CLIENT_ID: "${MICROSOFT_CLIENT_ID}"
       MICROSOFT_CLIENT_SECRET: "${MICROSOFT_CLIENT_SECRET}"
+      PUBSUB_TOPIC: "${PUBSUB_TOPIC}"
+      PUBSUB_SECRET: "${PUBSUB_SECRET}"
 
   ai-compliance-service:
     build:

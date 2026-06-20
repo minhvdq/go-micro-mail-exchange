@@ -13,15 +13,17 @@ import (
 )
 
 type OAuthToken struct {
-	ID            string
-	UserID        string
-	TenantID      string
-	Provider      string
-	AccessToken   string
-	RefreshToken  string
-	TokenExpiry   time.Time
-	GmailAddress  string
-	LastScannedAt *time.Time
+	ID             string
+	UserID         string
+	TenantID       string
+	Provider       string
+	AccessToken    string
+	RefreshToken   string
+	TokenExpiry    time.Time
+	GmailAddress   string
+	LastScannedAt  *time.Time
+	HistoryID      int64
+	WatchExpiresAt *time.Time
 }
 
 func (m *Models) UpsertOAuthToken(ctx context.Context, userID, tenantID, provider, accessToken, refreshToken, gmailAddress string, expiry time.Time) error {
@@ -47,17 +49,39 @@ func (m *Models) GetOAuthToken(ctx context.Context, userID, provider string) (*O
 	defer cancel()
 
 	const q = `
-		SELECT id, user_id, tenant_id, provider, access_token, refresh_token, token_expiry, gmail_address, last_scanned_at
+		SELECT id, user_id, tenant_id, provider, access_token, refresh_token, token_expiry,
+		       gmail_address, last_scanned_at, history_id, watch_expires_at
 		FROM oauth_tokens WHERE user_id = $1 AND provider = $2`
 	var t OAuthToken
 	err := m.db.QueryRowContext(ctx, q, userID, provider).Scan(
 		&t.ID, &t.UserID, &t.TenantID, &t.Provider,
-		&t.AccessToken, &t.RefreshToken, &t.TokenExpiry, &t.GmailAddress, &t.LastScannedAt,
+		&t.AccessToken, &t.RefreshToken, &t.TokenExpiry, &t.GmailAddress,
+		&t.LastScannedAt, &t.HistoryID, &t.WatchExpiresAt,
 	)
 	if err != nil {
 		return nil, err
 	}
 	return &t, nil
+}
+
+func (m *Models) UpdateHistoryID(ctx context.Context, userID, provider string, historyID int64) error {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	_, err := m.db.ExecContext(ctx,
+		`UPDATE oauth_tokens SET history_id = $1 WHERE user_id = $2 AND provider = $3`,
+		historyID, userID, provider,
+	)
+	return err
+}
+
+func (m *Models) UpdateWatch(ctx context.Context, userID, provider string, historyID int64, expiresAt time.Time) error {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+	_, err := m.db.ExecContext(ctx,
+		`UPDATE oauth_tokens SET history_id = $1, watch_expires_at = $2 WHERE user_id = $3 AND provider = $4`,
+		historyID, expiresAt, userID, provider,
+	)
+	return err
 }
 
 func (m *Models) UpdateLastScanned(ctx context.Context, userID, provider string) error {
@@ -126,7 +150,8 @@ func (m *Models) ListConnectedGmailUsers(ctx context.Context) ([]OAuthToken, err
 	defer cancel()
 
 	const q = `
-		SELECT id, user_id, tenant_id, provider, access_token, refresh_token, token_expiry, gmail_address, last_scanned_at
+		SELECT id, user_id, tenant_id, provider, access_token, refresh_token, token_expiry,
+		       gmail_address, last_scanned_at, history_id, watch_expires_at
 		FROM oauth_tokens WHERE provider = 'google'`
 	rows, err := m.db.QueryContext(ctx, q)
 	if err != nil {
@@ -138,7 +163,8 @@ func (m *Models) ListConnectedGmailUsers(ctx context.Context) ([]OAuthToken, err
 	for rows.Next() {
 		var t OAuthToken
 		if err := rows.Scan(&t.ID, &t.UserID, &t.TenantID, &t.Provider,
-			&t.AccessToken, &t.RefreshToken, &t.TokenExpiry, &t.GmailAddress, &t.LastScannedAt,
+			&t.AccessToken, &t.RefreshToken, &t.TokenExpiry, &t.GmailAddress,
+			&t.LastScannedAt, &t.HistoryID, &t.WatchExpiresAt,
 		); err != nil {
 			return nil, err
 		}
@@ -162,12 +188,14 @@ func (m *Models) GetOAuthTokenByGmailAddress(ctx context.Context, gmailAddress, 
 	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
 	defer cancel()
 	const q = `
-        SELECT id, user_id, tenant_id, provider, access_token, refresh_token, token_expiry, gmail_address, last_scanned_at
-        FROM oauth_tokens WHERE gmail_address = $1 AND provider = $2`
+		SELECT id, user_id, tenant_id, provider, access_token, refresh_token, token_expiry,
+		       gmail_address, last_scanned_at, history_id, watch_expires_at
+		FROM oauth_tokens WHERE gmail_address = $1 AND provider = $2`
 	var t OAuthToken
 	err := m.db.QueryRowContext(ctx, q, gmailAddress, provider).Scan(
 		&t.ID, &t.UserID, &t.TenantID, &t.Provider,
-		&t.AccessToken, &t.RefreshToken, &t.TokenExpiry, &t.GmailAddress, &t.LastScannedAt,
+		&t.AccessToken, &t.RefreshToken, &t.TokenExpiry, &t.GmailAddress,
+		&t.LastScannedAt, &t.HistoryID, &t.WatchExpiresAt,
 	)
 	if err != nil {
 		return nil, err

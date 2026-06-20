@@ -105,6 +105,8 @@ type Store interface {
 	GetOAuthTokenByGmailAddress(ctx context.Context, gmailAddress, provider string) (*data.OAuthToken, error)
 	DeleteOAuthToken(ctx context.Context, userID, provider string) error
 	UpdateLastScanned(ctx context.Context, userID, provider string) error
+	UpdateHistoryID(ctx context.Context, userID, provider string, historyID int64) error
+	UpdateWatch(ctx context.Context, userID, provider string, historyID int64, expiresAt time.Time) error
 	IsGmailMessageQuarantined(ctx context.Context, tenantID, gmailMessageID string) bool
 	InsertQuarantineFromGmail(ctx context.Context, tenantID, emailFrom, emailTo, subject, body string, violations []string, reasoning, priority, gmailMessageID string) error
 	ListConnectedGmailUsers(ctx context.Context) ([]data.OAuthToken, error)
@@ -127,11 +129,15 @@ type Config struct {
 	GoogleRedirectURI   string
 	AppBaseURL          string
 	FrontendURL         string
-	StripeSecretKey     string
-	StripeWebhookSecret string
-	StripePriceID       string
+	StripeSecretKey      string
+	StripeWebhookSecret  string
+	StripePriceStarter   string
+	StripePricePro       string
+	StripePriceBusiness  string
 	MicrosoftClientID     string
 	MicrosoftClientSecret string
+	PubSubTopic           string
+	PubSubSecret          string
 }
 
 func main() {
@@ -196,14 +202,18 @@ func main() {
 		GoogleRedirectURI:     googleRedirectURI,
 		AppBaseURL:            appBaseURL,
 		FrontendURL:           frontendURL,
-		StripeSecretKey:       os.Getenv("STRIPE_SECRET_KEY"),
-		StripeWebhookSecret:   os.Getenv("STRIPE_WEBHOOK_SECRET"),
-		StripePriceID:         os.Getenv("STRIPE_PRICE_ID"),
+		StripeSecretKey:      os.Getenv("STRIPE_SECRET_KEY"),
+		StripeWebhookSecret:  os.Getenv("STRIPE_WEBHOOK_SECRET"),
+		StripePriceStarter:   os.Getenv("STRIPE_PRICE_STARTER"),
+		StripePricePro:       os.Getenv("STRIPE_PRICE_PRO"),
+		StripePriceBusiness:  os.Getenv("STRIPE_PRICE_BUSINESS"),
 		MicrosoftClientID:     os.Getenv("MICROSOFT_CLIENT_ID"),
 		MicrosoftClientSecret: os.Getenv("MICROSOFT_CLIENT_SECRET"),
+		PubSubTopic:           os.Getenv("PUBSUB_TOPIC"),
+		PubSubSecret:          os.Getenv("PUBSUB_SECRET"),
 	}
 
-	go app.startGmailPoller()
+	go app.startWatchRenewal()
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", webPort),

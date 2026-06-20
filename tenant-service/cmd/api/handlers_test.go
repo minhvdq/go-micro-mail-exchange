@@ -144,6 +144,12 @@ func (m *mockStore) DeleteOAuthToken(_ context.Context, userID, provider string)
 func (m *mockStore) UpdateLastScanned(_ context.Context, userID, provider string) error {
 	return m.err
 }
+func (m *mockStore) UpdateHistoryID(_ context.Context, userID, provider string, historyID int64) error {
+	return m.err
+}
+func (m *mockStore) UpdateWatch(_ context.Context, userID, provider string, historyID int64, expiresAt time.Time) error {
+	return m.err
+}
 func (m *mockStore) IsGmailMessageQuarantined(_ context.Context, tenantID, gmailMessageID string) bool {
 	return false
 }

@@ -1,0 +1,3 @@
+ALTER TABLE oauth_tokens
+  ADD COLUMN IF NOT EXISTS history_id     BIGINT      NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS watch_expires_at TIMESTAMPTZ;
