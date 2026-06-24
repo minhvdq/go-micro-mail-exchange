@@ -530,7 +530,7 @@ export function Landing() {
             <a href="#features">Features</a>
             <a href="#pricing">Pricing</a>
             <a href="/privacy">Privacy Policy</a>
-            <a href="mailto:support@quarantio.com">Contact</a>
+            <a href="mailto:quarantio8@gmail.com">Contact</a>
           </div>
           <p className="footer-copy">© {new Date().getFullYear()} Quarantio. All rights reserved.</p>
         </div>
