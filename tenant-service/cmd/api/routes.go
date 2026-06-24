@@ -109,6 +109,7 @@ func (app *Config) routes() http.Handler {
 		r.Get("/v1/billing/status", app.BillingStatus)
 		r.With(RequireRole("owner")).Post("/v1/billing/checkout", app.BillingCheckout)
 		r.With(RequireRole("owner")).Post("/v1/billing/portal", app.BillingPortal)
+		r.With(RequireRole("owner")).Post("/v1/billing/sync", app.BillingSync)
 	})
 
 	return mux

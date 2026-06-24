@@ -276,13 +276,25 @@ func (m *Models) CreateReleaseRequest(ctx context.Context, quarantineID, tenantI
 	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
 	defer cancel()
 
+	var existingID string
+	err := m.db.QueryRowContext(ctx,
+		`SELECT id FROM release_requests WHERE quarantine_id = $1 AND requested_by = $2 AND status = 'pending'`,
+		quarantineID, userID,
+	).Scan(&existingID)
+	if err == nil {
+		return nil, errors.New("unique: release request already pending")
+	}
+	if !errors.Is(err, sql.ErrNoRows) {
+		return nil, err
+	}
+
 	query := `
 		INSERT INTO release_requests (quarantine_id, tenant_id, requested_by, note)
 		VALUES ($1, $2, $3, $4)
 		RETURNING id, quarantine_id, tenant_id, requested_by, note, status, created_at
 	`
 	var rr ReleaseRequest
-	err := m.db.QueryRowContext(ctx, query, quarantineID, tenantID, userID, note).
+	err = m.db.QueryRowContext(ctx, query, quarantineID, tenantID, userID, note).
 		Scan(&rr.ID, &rr.QuarantineID, &rr.TenantID, &rr.RequestedBy, &rr.Note, &rr.Status, &rr.CreatedAt)
 	return &rr, err
 }

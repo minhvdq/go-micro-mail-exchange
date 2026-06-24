@@ -12,6 +12,7 @@ import (
 	stripeSession "github.com/stripe/stripe-go/v76/checkout/session"
 	"github.com/stripe/stripe-go/v76/customer"
 	billingportal "github.com/stripe/stripe-go/v76/billingportal/session"
+	stripeSub "github.com/stripe/stripe-go/v76/subscription"
 	"github.com/stripe/stripe-go/v76/webhook"
 )
 
@@ -168,10 +169,12 @@ func (app *Config) BillingWebhook(w http.ResponseWriter, r *http.Request) {
 		if sess.Customer != nil {
 			customerID = sess.Customer.ID
 		}
-		// Detect plan from the first line item's price ID.
+		// Line items are not included in webhook payloads — fetch the subscription to get the price.
 		plan := "starter"
-		if sess.LineItems != nil && len(sess.LineItems.Data) > 0 && sess.LineItems.Data[0].Price != nil {
-			plan = app.planForPriceID(sess.LineItems.Data[0].Price.ID)
+		if subID != "" {
+			if sub, err := stripeSub.Get(subID, nil); err == nil && len(sub.Items.Data) > 0 && sub.Items.Data[0].Price != nil {
+				plan = app.planForPriceID(sub.Items.Data[0].Price.ID)
+			}
 		}
 		_ = app.Store.UpdateTenantStripeByCustomer(ctx, customerID, subID, plan)
 		_ = app.Store.SyncPlanSettings(ctx, customerID, plan)
@@ -207,6 +210,46 @@ func (app *Config) BillingWebhook(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 }
+// POST /v1/billing/sync — force-syncs plan from Stripe (called on billing-success redirect)
+func (app *Config) BillingSync(w http.ResponseWriter, r *http.Request) {
+	tenantID := r.Context().Value(contextKeyTenantID).(string)
+	stripe.Key = app.StripeSecretKey
+
+	tenant, err := app.Store.GetTenantByID(r.Context(), tenantID)
+	if err != nil {
+		app.errorJSON(w, err, http.StatusInternalServerError)
+		return
+	}
+	if tenant.StripeSubID == "" {
+		app.writeJSON(w, http.StatusOK, jsonResponse{Message: "no active subscription"})
+		return
+	}
+
+	sub, err := stripeSub.Get(tenant.StripeSubID, nil)
+	if err != nil {
+		app.errorJSON(w, errors.New("failed to fetch subscription from Stripe"), http.StatusInternalServerError)
+		return
+	}
+
+	plan := "starter"
+	if len(sub.Items.Data) > 0 && sub.Items.Data[0].Price != nil {
+		plan = app.planForPriceID(sub.Items.Data[0].Price.ID)
+	}
+
+	_ = app.Store.UpdateTenantStripe(r.Context(), tenantID, tenant.StripeCustomerID, sub.ID, plan)
+	_ = app.Store.SyncPlanSettings(r.Context(), tenant.StripeCustomerID, plan)
+
+	limits := data.GetPlanLimits(plan)
+	app.writeJSON(w, http.StatusOK, jsonResponse{
+		Error: false,
+		Data: map[string]any{
+			"plan":        plan,
+			"scans_limit": limits.ScansPerMonth,
+			"members":     limits.Members,
+		},
+	})
+}
+
 // POST /v1/billing/portal — creates a Stripe Customer Portal session (owner only)
 func (app *Config) BillingPortal(w http.ResponseWriter, r *http.Request) {
 	tenantID := r.Context().Value(contextKeyTenantID).(string)

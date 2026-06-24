@@ -160,6 +160,21 @@ func (app *Config) AcceptInvite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Enforce team limit at acceptance time (not just at invite time).
+	if tenant, err := app.Store.GetTenantByID(ctx, invite.TenantID); err == nil {
+		limits := data.GetPlanLimits(tenant.Plan)
+		if limits.Members != -1 {
+			count, _ := app.Store.CountOrgMembers(ctx, invite.TenantID)
+			if count >= limits.Members {
+				app.errorJSON(w, fmt.Errorf(
+					"member limit reached (%d/%d) on %s plan — the organization must upgrade before you can join",
+					count, limits.Members, tenant.Plan,
+				), http.StatusPaymentRequired)
+				return
+			}
+		}
+	}
+
 	existingUser, userErr := app.Store.GetUserByEmail(ctx, invite.Email)
 
 	if userErr == nil {
@@ -230,6 +245,7 @@ func (app *Config) AcceptInvite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := app.Store.CreateOrgMember(ctx, user.ID, invite.TenantID, "user", &invite.InvitedBy); err != nil {
+		_ = app.Store.DeleteUser(ctx, user.ID)
 		app.errorJSON(w, fmt.Errorf("join org: %w", err), http.StatusInternalServerError)
 		return
 	}
