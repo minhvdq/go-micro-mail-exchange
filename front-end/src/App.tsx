@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 import { AuthPage } from './pages/AuthPage';
 import { Landing } from './pages/Landing';
 import { Privacy } from './pages/Privacy';
+import { Terms } from './pages/Terms';
 import { AppLayout } from './AppLayout';
 import { TabName } from './components/Sidebar';
 import { TENANT_URL } from './config';
@@ -87,6 +88,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
       <Route path="*" element={<MainApp />} />
     </Routes>
   );
