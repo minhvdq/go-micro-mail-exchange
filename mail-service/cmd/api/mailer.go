@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/mail"
 )
 
 type Mail struct {
@@ -20,15 +21,21 @@ type Message struct {
 	Data    any
 }
 
-func (m *Mail) SendMessage(msg Message) error {
-	from := msg.From
-	if from == "" {
-		from = m.FromAddress
+func extractEmail(addr string) string {
+	if parsed, err := mail.ParseAddress(addr); err == nil {
+		return parsed.Address
 	}
+	return addr
+}
+
+func (m *Mail) SendMessage(msg Message) error {
+	from := m.FromAddress
+
+	to := extractEmail(msg.To)
 
 	body, err := json.Marshal(map[string]any{
 		"sender":      map[string]string{"name": m.FromName, "email": from},
-		"to":          []map[string]string{{"email": msg.To}},
+		"to":          []map[string]string{{"email": to}},
 		"subject":     msg.Subject,
 		"textContent": fmt.Sprintf("%v", msg.Data),
 	})
