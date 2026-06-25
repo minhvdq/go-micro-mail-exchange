@@ -321,8 +321,8 @@ func main() {
 		log.Printf("[email] received from=%s subject=%q tenant=%s", email.From, email.Subject, email.TenantID)
 		start := time.Now()
 		if err := app.processEmail(context.Background(), email, &agentAdapter{inner: agent}, embedder, publisher); err != nil {
-			log.Printf("[email] FAILED after %s: %v — nacking", time.Since(start).Round(time.Millisecond), err)
-			_ = d.Nack(false, true)
+			log.Printf("[email] FAILED after %s: %v — discarding", time.Since(start).Round(time.Millisecond), err)
+			_ = d.Nack(false, false)
 			continue
 		}
 		log.Printf("[email] done in %s", time.Since(start).Round(time.Millisecond))
