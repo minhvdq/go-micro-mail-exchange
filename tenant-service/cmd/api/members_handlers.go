@@ -141,10 +141,12 @@ func (app *Config) UpdateMemberRole(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Config) RemoveMember(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Context().Value(contextKeyTenantID).(string)
+	ctx := r.Context()
+	tenantID := ctx.Value(contextKeyTenantID).(string)
 	memberID := chi.URLParam(r, "id")
 
-	if err := app.Store.RemoveOrgMember(r.Context(), memberID, tenantID); err != nil {
+	userID, email, err := app.Store.RemoveOrgMemberGetUser(ctx, memberID, tenantID)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			app.errorJSON(w, errors.New("member not found or is the owner"), http.StatusNotFound)
 		} else {
@@ -152,6 +154,21 @@ func (app *Config) RemoveMember(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	// Provision a fresh free tenant so the removed user is never tenant-less.
+	newTenant, err := app.Store.CreateTenant(ctx, email)
+	if err != nil {
+		app.errorJSON(w, fmt.Errorf("create personal tenant: %w", err), http.StatusInternalServerError)
+		return
+	}
+	if err := app.Store.CreateOrgMember(ctx, userID, newTenant.ID, "owner", nil); err != nil {
+		app.errorJSON(w, fmt.Errorf("create org member: %w", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Invalidate sessions so the removed user gets new tokens on next login.
+	_ = app.Store.DeleteAllUserSessions(ctx, userID)
+
 	app.writeJSON(w, http.StatusOK, jsonResponse{Message: "member removed"})
 }
 

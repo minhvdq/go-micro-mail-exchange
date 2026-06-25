@@ -124,6 +124,9 @@ func (m *mockStore) UpdateOrgMemberRole(_ context.Context, memberID, tenantID, n
 func (m *mockStore) RemoveOrgMember(_ context.Context, memberID, tenantID string) error {
 	return m.err
 }
+func (m *mockStore) RemoveOrgMemberGetUser(_ context.Context, memberID, tenantID string) (string, string, error) {
+	return "", "", m.err
+}
 func (m *mockStore) CreateReleaseRequest(_ context.Context, quarantineID, tenantID, userID, note string) (*data.ReleaseRequest, error) {
 	return nil, m.err
 }

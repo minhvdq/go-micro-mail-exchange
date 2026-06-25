@@ -49,6 +49,7 @@ type Store interface {
 	ListOrgMembers(ctx context.Context, tenantID string) ([]data.OrgMember, error)
 	UpdateOrgMemberRole(ctx context.Context, memberID, tenantID, newRole string) error
 	RemoveOrgMember(ctx context.Context, memberID, tenantID string) error
+	RemoveOrgMemberGetUser(ctx context.Context, memberID, tenantID string) (userID, email string, err error)
 
 	// Embeddings / compliance
 	InsertPolicyEmbedding(ctx context.Context, tenantID, filename string, chunkIndex int, content string, embedding []float32) error

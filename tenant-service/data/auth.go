@@ -226,6 +226,22 @@ func (m *Models) RemoveOrgMember(ctx context.Context, memberID, tenantID string)
 	return nil
 }
 
+// RemoveOrgMemberGetUser removes a member and returns the user_id and email of the removed user.
+func (m *Models) RemoveOrgMemberGetUser(ctx context.Context, memberID, tenantID string) (userID, email string, err error) {
+	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
+	defer cancel()
+
+	err = m.db.QueryRowContext(ctx, `
+		DELETE FROM org_members
+		WHERE id = $1 AND tenant_id = $2 AND role != 'owner'
+		RETURNING user_id, (SELECT email FROM users WHERE id = user_id)
+	`, memberID, tenantID).Scan(&userID, &email)
+	if err == sql.ErrNoRows {
+		return "", "", sql.ErrNoRows
+	}
+	return
+}
+
 // CreateSession generates a random refresh token, stores its hash, and returns the raw token.
 func (m *Models) CreateSession(ctx context.Context, userID string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, dbTimeout)
