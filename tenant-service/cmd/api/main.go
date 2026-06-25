@@ -249,7 +249,7 @@ func connectToDB() *sql.DB {
 	for {
 		conn, err := openDB(dsn)
 		if err != nil {
-			log.Println("postgres not yet ready...")
+			log.Printf("postgres not yet ready: %v", err)
 			counts++
 		} else {
 			log.Println("connected to postgres")
