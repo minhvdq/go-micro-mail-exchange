@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { TENANT_URL } from '../config';
 import { useApi } from '../hooks/useApi';
+import { useAuth } from '../context/AuthContext';
 import { Settings as SettingsType, BillingStatus, GmailStatus } from '../types';
 
 type AlertState = { ok: boolean; msg: string } | null;
@@ -11,6 +12,8 @@ interface SettingsProps {
 
 export function Settings({ onGoToPlans }: SettingsProps) {
   const { apiFetch } = useApi();
+  const { role } = useAuth();
+  const isOwner = role === 'owner';
   const [settings, setSettings] = useState<SettingsType>({ auto_deliver_low: true, retention_days: 90 });
   const [billing, setBilling] = useState<BillingStatus | null>(null);
   const [gmail, setGmail] = useState<GmailStatus | null>(null);
@@ -159,7 +162,7 @@ export function Settings({ onGoToPlans }: SettingsProps) {
             <span className="text-sm text-gray-400">No active plan</span>
           </div>
           <p className="text-sm text-gray-500 mb-3">Get started with a plan to unlock email scanning and team features.</p>
-          {onGoToPlans && (
+          {isOwner && onGoToPlans && (
             <button
               onClick={onGoToPlans}
               className="bg-brand hover:bg-brand-dark text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
@@ -184,19 +187,21 @@ export function Settings({ onGoToPlans }: SettingsProps) {
           <span className="text-sm font-medium text-gray-700">Active Subscription</span>
         </div>
         <div className="flex justify-between text-xs text-gray-400 mb-1">
-          <span>Scans this period</span>
+          <span>Team scans this period</span>
           <span>{used} / {limit === -1 ? '∞' : limit}</span>
         </div>
         <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden mb-3">
           <div className="h-full bg-brand rounded-full" style={{ width: `${scanPct}%` }} />
         </div>
-        {renderPlanCards(plan, hasSub)}
-        <button
-          onClick={openPortal}
-          className="mt-3 border border-gray-200 text-gray-600 hover:text-gray-900 hover:border-gray-300 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-        >
-          Manage Billing
-        </button>
+        {isOwner && renderPlanCards(plan, hasSub)}
+        {isOwner && (
+          <button
+            onClick={openPortal}
+            className="mt-3 border border-gray-200 text-gray-600 hover:text-gray-900 hover:border-gray-300 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          >
+            Manage Billing
+          </button>
+        )}
       </div>
     );
   };
