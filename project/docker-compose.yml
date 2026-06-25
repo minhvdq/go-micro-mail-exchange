@@ -59,6 +59,7 @@ services:
       PUBSUB_TOPIC: "${PUBSUB_TOPIC}"
       PUBSUB_SECRET: "${PUBSUB_SECRET}"
       RABBITMQ_URL: "amqp://guest:guest@rabbitmq"
+      APP_BASE_URL: "https://api.quarantio.app"
 
   ai-compliance-service:
     build:
