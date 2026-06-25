@@ -138,7 +138,7 @@ const navItems: NavItem[] = [
   {
     tab: 'settings',
     label: 'Settings',
-    ownerOnly: true,
+    ownerOnly: false,
     icon: (
       <svg className="w-[18px] h-[18px] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
         <circle cx="12" cy="12" r="3"/>
