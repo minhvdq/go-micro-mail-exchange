@@ -239,7 +239,7 @@ export function Settings({ onGoToPlans }: SettingsProps) {
   const showMailbox = billing && billing.plan !== 'free';
 
   return (
-    <div className="p-6 max-w-xl">
+    <div className="p-6 max-w-2xl mx-auto">
       <h2 className="text-base font-semibold text-gray-900 mb-5">Settings</h2>
 
       {settingsAlert && (

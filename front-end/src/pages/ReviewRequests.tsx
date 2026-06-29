@@ -41,7 +41,7 @@ export function ReviewRequests({ onBadgeChange }: ReviewRequestsProps) {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-2xl mx-auto">
       <div className="flex items-start justify-between mb-5">
         <div>
           <h2 className="text-base font-semibold text-gray-900 m-0">Review Requests</h2>

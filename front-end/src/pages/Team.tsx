@@ -84,7 +84,7 @@ export function Team() {
   };
 
   return (
-    <div className="p-6 max-w-2xl">
+    <div className="p-6 max-w-2xl mx-auto">
       <div className="flex items-start justify-between mb-1">
         <h2 className="text-base font-semibold text-gray-900 m-0">Team Members</h2>
         <button
