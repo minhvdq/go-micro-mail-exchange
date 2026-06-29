@@ -3,7 +3,7 @@ WORKDIR /app
 COPY . .
 RUN CGO_ENABLED=0 go build -o mailServiceApp ./cmd/api
 
-FROM alpine:latest
+FROM alpine:3.21
 RUN mkdir /app
 COPY --from=builder /app/mailServiceApp /app
 COPY templates /templates
