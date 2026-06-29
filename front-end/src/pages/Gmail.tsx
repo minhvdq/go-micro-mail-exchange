@@ -73,14 +73,13 @@ export function Gmail() {
     : 'Never scanned.';
 
   return (
-    <div className="p-6 h-full">
+    <div className="p-6 max-w-2xl mx-auto">
       <div className="mb-5">
         <h2 className="text-base font-semibold text-gray-900">Gmail Inbox Scanner</h2>
         <p className="text-sm text-gray-400 mt-0.5">Connect Gmail and scan your inbox for compliance issues.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', alignItems: 'start' }}>
-        {/* Left: Connection card */}
+      <div className="flex flex-col gap-4">
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-5 py-3.5 border-b border-gray-100">
             <h3 className="text-sm font-semibold text-gray-800 m-0">Connection Status</h3>
@@ -134,7 +133,6 @@ export function Gmail() {
           </div>
         </div>
 
-        {/* Right: Scan result or info */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-5 py-3.5 border-b border-gray-100">
             <h3 className="text-sm font-semibold text-gray-800 m-0">Scan Result</h3>
