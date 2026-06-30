@@ -186,6 +186,13 @@ type scanSummary struct {
 func (app *Config) GmailScan(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	userID := r.Context().Value(contextKeyUserID).(string)
+	tenantID := r.Context().Value(contextKeyTenantID).(string)
+
+	tenant, err := app.Store.GetTenantByID(ctx, tenantID)
+	if err != nil || tenant.Plan == "free" || tenant.Plan == "" {
+		app.errorJSON(w, fmt.Errorf("Gmail scanning requires a paid plan — upgrade to continue"), http.StatusPaymentRequired)
+		return
+	}
 
 	stored, err := app.Store.GetOAuthToken(ctx, userID, "google")
 	if err != nil {

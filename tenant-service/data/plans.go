@@ -14,7 +14,7 @@ type PlanLimits struct {
 }
 
 var Plans = map[string]PlanLimits{
-	"free":     {ScansPerMonth: 100, Mailboxes: 1, Members: 1, RetentionDays: 30},
+	"free":     {ScansPerMonth: 0, Mailboxes: 0, Members: 1, RetentionDays: 30},
 	"starter":  {ScansPerMonth: 1000, Mailboxes: 5, Members: 5, RetentionDays: 90},
 	"pro":      {ScansPerMonth: 10000, Mailboxes: 25, Members: 25, RetentionDays: 90},
 	"business": {ScansPerMonth: -1, Mailboxes: -1, Members: -1, RetentionDays: 90},
