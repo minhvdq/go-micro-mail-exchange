@@ -3,7 +3,7 @@ import { TENANT_URL } from '../config';
 import { useApi } from '../hooks/useApi';
 import { GmailStatus } from '../types';
 
-export function Gmail() {
+export function Gmail({ onGoToPlans }: { onGoToPlans?: () => void }) {
   const { apiFetch } = useApi();
   const [status, setStatus] = useState<GmailStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -94,7 +94,7 @@ export function Gmail() {
                 <p className="text-sm font-semibold text-amber-800 mb-1">Paid plan required</p>
                 <p className="text-sm text-amber-700 mb-3">Gmail scanning is available on Starter and above. Start a 14-day free trial — no charge until day 14.</p>
                 <button
-                  onClick={() => (window as any).dispatchEvent(new CustomEvent('navigate', { detail: 'settings' }))}
+                  onClick={onGoToPlans}
                   className="text-sm font-medium bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg transition-colors"
                 >
                   View Plans →

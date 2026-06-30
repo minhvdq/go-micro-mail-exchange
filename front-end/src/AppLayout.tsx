@@ -147,7 +147,7 @@ export function AppLayout({ initialTab = 'dashboard', inviteToken }: AppLayoutPr
       case 'dashboard': return <Dashboard onNavigateToQuarantine={() => setActiveTab('quarantine')} />;
       case 'check': return <CheckEmail />;
       case 'quarantine': return <Quarantine onBadgeChange={handleQuarantineBadge} />;
-      case 'gmail': return <Gmail />;
+      case 'gmail': return <Gmail onGoToPlans={() => setActiveTab('plans')} />;
       case 'releases': return <ReviewRequests onBadgeChange={handleReleasesBadge} />;
       case 'audit': return <AuditLog />;
       case 'policies': return <Policies />;
