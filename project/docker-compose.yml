@@ -39,7 +39,7 @@ services:
       mode: replicated
       replicas: 1
     environment:
-      DSN: "host=postgres port=5432 user=postgres password=password dbname=users sslmode=disable timezone=UTC connect_timeout=5"
+      DSN: "host=postgres port=5432 user=postgres password=${POSTGRES_PASSWORD} dbname=users sslmode=disable timezone=UTC connect_timeout=5"
       MISTRAL_API_KEY: "${MISTRAL_API_KEY}"
       MAIL_SERVICE_URL: "http://mail-service/send"
       COMPLIANCE_SVC_URL: "http://ai-compliance-service:8083"
@@ -78,7 +78,7 @@ services:
       postgres:
         condition: service_started
     environment:
-      DSN: "host=postgres port=5432 user=postgres password=password dbname=users sslmode=disable timezone=UTC connect_timeout=5"
+      DSN: "host=postgres port=5432 user=postgres password=${POSTGRES_PASSWORD} dbname=users sslmode=disable timezone=UTC connect_timeout=5"
       MISTRAL_API_KEY: "${MISTRAL_API_KEY}"
       MAIL_SERVICE_URL: "http://mail-service/send"
       ENCRYPTION_KEY: "${ENCRYPTION_KEY}"
@@ -95,7 +95,7 @@ services:
       replicas: 1
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: "password"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
       POSTGRES_DB: users
     volumes:
       - postgres_data:/var/lib/postgresql/data/
