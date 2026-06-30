@@ -149,7 +149,7 @@ func (m *mockStore) UpsertOAuthToken(_ context.Context, userID, tenantID, provid
 func (m *mockStore) GetOAuthToken(_ context.Context, userID, provider string) (*data.OAuthToken, error) {
 	return nil, m.err
 }
-func (m *mockStore) DeleteOAuthToken(_ context.Context, userID, provider string) error {
+func (m *mockStore) DeleteTenantOAuthTokens(_ context.Context, tenantID, provider string) error { return nil }\nfunc (m *mockStore) GetTenantByStripeCustomer(_ context.Context, customerID string) (*data.Tenant, error) { return &data.Tenant{}, nil }\nfunc (m *mockStore) DeleteOAuthToken(_ context.Context, userID, provider string) error {
 	return m.err
 }
 func (m *mockStore) UpdateLastScanned(_ context.Context, userID, provider string) error {

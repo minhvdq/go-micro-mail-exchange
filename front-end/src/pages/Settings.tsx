@@ -180,19 +180,19 @@ export function Settings({ onGoToPlans }: SettingsProps) {
     if (plan === 'free') {
       return (
         <div>
-          <div className="flex items-center gap-3 mb-3">
-            <span className="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full">Free</span>
-            <span className="text-sm text-gray-400">No active plan</span>
+          <div className="rounded-xl bg-gradient-to-br from-green-700 to-green-500 p-5 text-white mb-3">
+            <div className="text-xs font-semibold uppercase tracking-widest opacity-75 mb-1">You're on the Free plan</div>
+            <div className="text-lg font-bold mb-1">Start your 14-day free trial</div>
+            <p className="text-sm opacity-80 mb-4">Get Gmail scanning, audit logs, quarantine management, and team access. No charge until day 14 — cancel anytime.</p>
+            {isOwner && onGoToPlans && (
+              <button
+                onClick={onGoToPlans}
+                className="bg-white text-green-700 text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors hover:bg-green-50"
+              >
+                Start Free Trial →
+              </button>
+            )}
           </div>
-          <p className="text-sm text-gray-500 mb-3">Get started with a plan to unlock email scanning and team features.</p>
-          {isOwner && onGoToPlans && (
-            <button
-              onClick={onGoToPlans}
-              className="bg-brand hover:bg-brand-dark text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
-            >
-              Choose a Plan
-            </button>
-          )}
         </div>
       );
     }

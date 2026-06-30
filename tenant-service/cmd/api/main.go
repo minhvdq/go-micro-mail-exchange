@@ -67,6 +67,7 @@ type Store interface {
 
 	// Billing
 	GetTenantByID(ctx context.Context, id string) (*data.Tenant, error)
+	GetTenantByStripeCustomer(ctx context.Context, customerID string) (*data.Tenant, error)
 	UpdateTenantStripe(ctx context.Context, tenantID, customerID, subID, plan string) error
 	UpdateTenantStripeByCustomer(ctx context.Context, customerID, subID, plan string) error
 	SyncPlanSettings(ctx context.Context, customerID, plan string) error
@@ -110,6 +111,7 @@ type Store interface {
 	GetOAuthToken(ctx context.Context, userID, provider string) (*data.OAuthToken, error)
 	GetOAuthTokenByGmailAddress(ctx context.Context, gmailAddress, provider string) (*data.OAuthToken, error)
 	DeleteOAuthToken(ctx context.Context, userID, provider string) error
+	DeleteTenantOAuthTokens(ctx context.Context, tenantID, provider string) error
 	UpdateLastScanned(ctx context.Context, userID, provider string) error
 	UpdateHistoryID(ctx context.Context, userID, provider string, historyID int64) error
 	UpdateWatch(ctx context.Context, userID, provider string, historyID int64, expiresAt time.Time) error

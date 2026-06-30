@@ -205,3 +205,10 @@ func (m *Models) GetOAuthTokenByGmailAddress(ctx context.Context, gmailAddress, 
 
 // sentinel for missing row
 var ErrNoToken = sql.ErrNoRows
+
+// DeleteTenantOAuthTokens removes all OAuth tokens for a tenant (e.g. on subscription cancellation).
+func (m *Models) DeleteTenantOAuthTokens(ctx context.Context, tenantID, provider string) error {
+	_, err := m.db.ExecContext(ctx,
+		`DELETE FROM oauth_tokens WHERE tenant_id = $1 AND provider = $2`, tenantID, provider)
+	return err
+}

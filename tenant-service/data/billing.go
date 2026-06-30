@@ -70,3 +70,13 @@ func (m *Models) UpdateTenantStripeByCustomer(ctx context.Context, customerID, s
 	)
 	return err
 }
+
+func (m *Models) GetTenantByStripeCustomer(ctx context.Context, customerID string) (*Tenant, error) {
+	t := &Tenant{}
+	row := m.db.QueryRowContext(ctx,
+		`SELECT id, name, plan, stripe_customer_id, stripe_sub_id,
+		        scans_this_period, period_reset_at, trial_ends_at, created_at
+		 FROM tenants WHERE stripe_customer_id = $1`, customerID)
+	return t, row.Scan(&t.ID, &t.Name, &t.Plan, &t.StripeCustomerID, &t.StripeSubID,
+		&t.ScansThisPeriod, &t.PeriodResetAt, &t.TrialEndsAt, &t.CreatedAt)
+}

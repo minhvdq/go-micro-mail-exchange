@@ -9,6 +9,7 @@ export function Gmail() {
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<string | null>(null);
+  const [plan, setPlan] = useState<string>('free');
 
   const loadStatus = useCallback(async () => {
     setLoading(true);
@@ -27,7 +28,10 @@ export function Gmail() {
 
   useEffect(() => {
     loadStatus();
-  }, [loadStatus]);
+    apiFetch(`${TENANT_URL}/v1/billing/status`).then(r => r.json()).then(d => {
+      if (d?.plan) setPlan(d.plan);
+    }).catch(() => {});
+  }, [loadStatus, apiFetch]);
 
   const gmailConnect = () => {
     const token = localStorage.getItem('gm_access') || '';
@@ -85,6 +89,18 @@ export function Gmail() {
             <h3 className="text-sm font-semibold text-gray-800 m-0">Connection Status</h3>
           </div>
           <div className="p-5">
+            {plan === 'free' && (
+              <div className="rounded-lg bg-amber-50 border border-amber-200 p-4 mb-4">
+                <p className="text-sm font-semibold text-amber-800 mb-1">Paid plan required</p>
+                <p className="text-sm text-amber-700 mb-3">Gmail scanning is available on Starter and above. Start a 14-day free trial — no charge until day 14.</p>
+                <button
+                  onClick={() => (window as any).dispatchEvent(new CustomEvent('navigate', { detail: 'settings' }))}
+                  className="text-sm font-medium bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  View Plans →
+                </button>
+              </div>
+            )}
             {loading && <div className="text-sm text-gray-400">Checking…</div>}
             {!loading && status?.connected && (
               <div>
@@ -118,7 +134,7 @@ export function Gmail() {
                 </button>
               </div>
             )}
-            {!loading && !status?.connected && (
+            {!loading && !status?.connected && plan !== 'free' && (
               <div>
                 <p className="text-sm text-gray-500 mb-3">No Gmail account connected.</p>
                 <button

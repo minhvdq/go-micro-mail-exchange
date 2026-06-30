@@ -210,6 +210,9 @@ func (app *Config) BillingWebhook(w http.ResponseWriter, r *http.Request) {
 		}
 		_ = app.Store.UpdateTenantStripeByCustomer(ctx, customerID, "", "free")
 		_ = app.Store.SyncPlanSettings(ctx, customerID, "free")
+		if t, err := app.Store.GetTenantByStripeCustomer(ctx, customerID); err == nil {
+			_ = app.Store.DeleteTenantOAuthTokens(ctx, t.ID, "google")
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)
